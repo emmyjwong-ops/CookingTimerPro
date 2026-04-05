@@ -37,6 +37,24 @@ export default function SettingsScreen({navigation}) {
   const [soundPickerVisible, setSoundPickerVisible] = useState(false);
   const soundPreviewTimeout = useRef(null);
 
+  // Hidden dev toggle: tap version text 7 times to unlock/lock premium.
+  const devTapCount = useRef(0);
+  const devTapTimer = useRef(null);
+  const handleVersionTap = () => {
+    devTapCount.current += 1;
+    if (devTapTimer.current) clearTimeout(devTapTimer.current);
+    devTapTimer.current = setTimeout(() => { devTapCount.current = 0; }, 1500);
+    if (devTapCount.current >= 7) {
+      devTapCount.current = 0;
+      const next = !settings.isPremium;
+      updateSetting('isPremium', next);
+      Alert.alert(
+        next ? '🔓 Premium ON' : '🔒 Premium OFF',
+        'Developer toggle — not visible to real users.',
+      );
+    }
+  };
+
   // FIX: clean up any in-flight sound preview when the component unmounts
   // so a pending setTimeout can't stop a sound that started for a different reason.
   useEffect(() => {
@@ -194,9 +212,11 @@ export default function SettingsScreen({navigation}) {
         />
       </View>
 
-      <Text style={[styles.version, {color: C.tertiaryText}]}>
-        CookingTimerPro v1.0.0
-      </Text>
+      <TouchableOpacity onPress={handleVersionTap} activeOpacity={1}>
+        <Text style={[styles.version, {color: C.tertiaryText}]}>
+          CookingTimerPro v1.0.0
+        </Text>
+      </TouchableOpacity>
 
       {/* Sound picker modal */}
       <Modal
