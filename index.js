@@ -24,7 +24,7 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
       const raw = await AsyncStorage.getItem('@CookingTimerPro:settings');
       const parsed = raw ? JSON.parse(raw) : {};
       if (parsed.vibration !== false) {
-        Vibration.vibrate([0, 500, 200, 500]);
+        Vibration.vibrate([0, 500, 200, 500, 200, 500]);
       }
     } catch (_) {
       // AsyncStorage failed — don't vibrate, respect silence over noise

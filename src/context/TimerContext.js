@@ -7,6 +7,7 @@ import React, {
   useCallback,
 } from 'react';
 import {saveTimers, loadTimers, incrementCookStat, loadCookStats} from '../utils/storage';
+import {ensureAndroidPermissions} from '../utils/androidPermissions';
 import {
   scheduleTriggerNotification,
   cancelTriggerNotification,
@@ -119,6 +120,8 @@ export function TimerProvider({children}) {
         return {error: 'busy'};
       }
       isAddingRef.current = true;
+      // Check Android permissions on first use (non-blocking)
+      ensureAndroidPermissions();
       const activeCount = timersRef.current.filter(t => !t.isComplete).length;
       if (!settings.isPremium && activeCount >= MAX_FREE_TIMERS) {
         isAddingRef.current = false;
