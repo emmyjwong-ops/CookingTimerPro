@@ -120,6 +120,10 @@ export default function AddTimerScreen({navigation, route}) {
         );
         return;
       }
+      if (result.error === 'busy') {
+        // Double-tap protection — silently ignore, do not navigate back.
+        return;
+      }
     }
     navigation.goBack();
   };

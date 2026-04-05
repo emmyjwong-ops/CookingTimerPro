@@ -28,6 +28,7 @@ export default function QuickPresets() {
         'Free accounts can run up to 5 timers at once. Upgrade to Premium for unlimited timers.',
       );
     }
+    // result.error === 'busy' means a rapid double-tap — silently ignore.
   };
 
   if (presets.length === 0) {

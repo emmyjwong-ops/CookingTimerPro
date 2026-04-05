@@ -2,7 +2,7 @@
  * @format
  */
 
-import {AppRegistry, NativeModules, Vibration} from 'react-native';
+import {AppRegistry, NativeModules, AppState} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 import notifee, {EventType} from '@notifee/react-native';
@@ -12,23 +12,21 @@ notifee.registerForegroundService(() => new Promise(() => {}));
 
 // Plays bell sound when a timer trigger notification fires in background.
 // Only fires for timer completions (id starts with 'trigger-'), NOT for
-// the ongoing statusbar notification — which was causing sound on minimize.
+// the ongoing statusbar notification.
+//
+// FIX: guard against firing while the app is active — the foreground
+// interval in TimerContext already handles sound in that case, so playing
+// here too would cause doubled/layered sound.
+//
+// FIX: notification channel handles vibration on Android automatically;
+// a separate Vibration.vibrate() call here would cause double-vibration.
 notifee.onBackgroundEvent(async ({type, detail}) => {
   if (
     type === EventType.DELIVERED &&
-    detail.notification?.id?.startsWith('trigger-')
+    detail.notification?.id?.startsWith('trigger-') &&
+    AppState.currentState !== 'active'
   ) {
     NativeModules.SoundModule?.playBell();
-    try {
-      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-      const raw = await AsyncStorage.getItem('@CookingTimerPro:settings');
-      const parsed = raw ? JSON.parse(raw) : {};
-      if (parsed.vibration !== false) {
-        Vibration.vibrate([0, 500, 200, 500, 200, 500]);
-      }
-    } catch (_) {
-      // AsyncStorage failed — don't vibrate, respect silence over noise
-    }
   }
 });
 

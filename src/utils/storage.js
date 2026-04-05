@@ -44,7 +44,13 @@ export async function loadSettings() {
 
 export async function savePresets(presets) {
   try {
-    await AsyncStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+    // FIX: null means "use defaults" — remove the key entirely rather than
+    // writing "null", which is fragile and confusing on future reads.
+    if (presets === null) {
+      await AsyncStorage.removeItem(PRESETS_KEY);
+    } else {
+      await AsyncStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+    }
   } catch (e) {
     console.warn('Failed to save presets', e);
   }

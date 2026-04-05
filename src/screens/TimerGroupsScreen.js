@@ -92,7 +92,9 @@ export default function TimerGroupsScreen({navigation}) {
     const m = parseInt(timerMinutes || '0', 10) || 0;
     const seconds = h * 3600 + m * 60;
     if (seconds <= 0) {return;}
-    setGroupTimers(prev => [...prev, {name, note: '', seconds}]);
+    // FIX: give each in-progress timer a stable id so React keys are not
+    // index-based (index keys break when items are removed from the middle).
+    setGroupTimers(prev => [...prev, {id: Date.now().toString(), name, note: '', seconds}]);
     setTimerName('');
     setTimerHours('');
     setTimerMinutes('');
@@ -127,7 +129,9 @@ export default function TimerGroupsScreen({navigation}) {
         const result = addTimer(t.name, t.note, t.seconds);
         if (result.error === 'free_limit') {
           limitReached = true;
-        } else {
+        } else if (!result.error) {
+          // FIX: only count as started if there was no error at all
+          // (previously result.error === 'busy' would silently count as started)
           anyStarted = true;
         }
       }
@@ -191,7 +195,9 @@ export default function TimerGroupsScreen({navigation}) {
             </View>
             <View style={styles.timerList}>
               {item.timers.map((t, i) => (
-                <Text key={i} style={[styles.timerLine, {color: C.secondaryText}]}>
+                // FIX: prefer stable id over index; fall back to index only for
+                // legacy groups saved before ids were added to timer objects.
+                <Text key={t.id ?? i} style={[styles.timerLine, {color: C.secondaryText}]}>
                   · {t.name} — {formatTime(t.seconds)}
                 </Text>
               ))}
@@ -248,7 +254,8 @@ export default function TimerGroupsScreen({navigation}) {
               {groupTimers.length > 0 && (
                 <View style={[styles.addedList, {borderColor: C.border}]}>
                   {groupTimers.map((t, i) => (
-                    <View key={i} style={styles.addedRow}>
+                    // FIX: use stable t.id instead of array index as key
+                    <View key={t.id ?? i} style={styles.addedRow}>
                       <Text style={[styles.addedName, {color: C.primaryText}]}>
                         {t.name} — {formatTime(t.seconds)}
                       </Text>

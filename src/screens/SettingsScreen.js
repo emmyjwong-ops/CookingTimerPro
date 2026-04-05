@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   NativeModules,
+  Linking,
 } from 'react-native';
 import {useTheme} from '../hooks/useTheme';
 import {useSettings} from '../context/SettingsContext';
@@ -34,6 +35,18 @@ export default function SettingsScreen({navigation}) {
   const {buyPremium, restorePurchases, purchasing, displayPrice} = usePurchase();
   const C = useTheme();
   const [soundPickerVisible, setSoundPickerVisible] = useState(false);
+  const soundPreviewTimeout = useRef(null);
+
+  // FIX: clean up any in-flight sound preview when the component unmounts
+  // so a pending setTimeout can't stop a sound that started for a different reason.
+  useEffect(() => {
+    return () => {
+      if (soundPreviewTimeout.current) {
+        clearTimeout(soundPreviewTimeout.current);
+        NativeModules.SoundModule?.stopBell();
+      }
+    };
+  }, []);
 
   const darkModeLabel = {light: 'Light', dark: 'Dark'};
 
@@ -52,9 +65,17 @@ export default function SettingsScreen({navigation}) {
       return;
     }
     updateSetting('alertSound', sound.id);
-    // Preview the sound
+    // FIX: cancel any existing preview before starting a new one, and store
+    // the timeout ref so it can be cleared on unmount.
+    if (soundPreviewTimeout.current) {
+      clearTimeout(soundPreviewTimeout.current);
+      NativeModules.SoundModule?.stopBell();
+    }
     NativeModules.SoundModule?.playBell(getSoundFile(sound.id));
-    setTimeout(() => NativeModules.SoundModule?.stopBell(), 2500);
+    soundPreviewTimeout.current = setTimeout(() => {
+      NativeModules.SoundModule?.stopBell();
+      soundPreviewTimeout.current = null;
+    }, 2500);
     setSoundPickerVisible(false);
   };
 
@@ -163,7 +184,13 @@ export default function SettingsScreen({navigation}) {
         <SettingRow
           label="Rate the app"
           C={C}
-          onPress={() => Alert.alert('Rate', 'App Store link not configured.')}
+          onPress={() =>
+            Linking.openURL('market://details?id=com.cookingtimerpro').catch(() =>
+              Linking.openURL(
+                'https://play.google.com/store/apps/details?id=com.cookingtimerpro',
+              ),
+            )
+          }
         />
       </View>
 

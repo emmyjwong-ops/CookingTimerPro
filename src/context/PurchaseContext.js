@@ -46,6 +46,13 @@ export function PurchaseProvider({children}) {
       billingEmitter.addListener('billing:restored', ({owned}) => {
         if (owned) {
           updateSetting('isPremium', true);
+          Alert.alert('✓ Restored', 'Premium has been restored successfully.');
+        } else {
+          // FIX: previously showed nothing — user was left unsure if restore worked.
+          Alert.alert(
+            'No purchase found',
+            'We could not find a previous Premium purchase for this account.',
+          );
         }
       }),
 

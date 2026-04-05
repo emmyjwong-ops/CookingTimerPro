@@ -49,17 +49,22 @@ export default function TimerCard({timer, navigation}) {
 
   useEffect(() => {
     if (timer.isComplete) {
+      // FIX: use useNativeDriver: true (animate opacity, not borderColor).
+      // The previous code animated borderColor with useNativeDriver: false AND
+      // both outputRange values were identical (C.red → C.red), so the
+      // interpolation was a no-op. Opacity animation with the native driver is
+      // both correct and significantly more performant.
       const animation = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 0.3,
+            toValue: 0.35,
             duration: 600,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
           Animated.timing(pulseAnim, {
             toValue: 1,
             duration: 600,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
         ]),
       );
@@ -101,15 +106,12 @@ export default function TimerCard({timer, navigation}) {
     timer.totalSeconds,
     C,
   );
+  // FIX: guard against totalSeconds === 0 to avoid NaN from division.
   const isUrgent =
     !timer.isComplete &&
+    timer.totalSeconds > 0 &&
     (timer.remainingSeconds / timer.totalSeconds < 0.25 ||
       timer.remainingSeconds < 60);
-
-  const borderColorAnim = pulseAnim.interpolate({
-    inputRange: [0.3, 1],
-    outputRange: [C.red, C.red],
-  });
 
   return (
     <Animated.View
@@ -117,12 +119,11 @@ export default function TimerCard({timer, navigation}) {
         styles.card,
         {
           backgroundColor: timer.isComplete ? C.completeBg : C.primaryBg,
-          borderColor: timer.isComplete
-            ? borderColorAnim
-            : isUrgent
-            ? C.red
-            : C.border,
+          borderColor: timer.isComplete ? C.red : isUrgent ? C.red : C.border,
           borderWidth: timer.isComplete ? 2 : isUrgent ? 1 : 0.5,
+          // FIX: pulse the card's opacity using the native driver (replaces the
+          // no-op borderColor interpolation that used useNativeDriver: false).
+          opacity: timer.isComplete ? pulseAnim : 1,
         },
       ]}>
       <TouchableOpacity
