@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import {useTheme} from '../hooks/useTheme';
 import {useTimers} from '../context/TimerContext';
 
@@ -21,8 +21,17 @@ export default function MostCooked() {
 
   if (!cookStats || cookStats.length === 0) {return null;}
 
+  // FIX: previously addTimer result was completely ignored — free limit or
+  // busy errors produced no feedback at all.
   const handleTap = item => {
-    addTimer(item.name, '', item.topSeconds ?? 600);
+    const result = addTimer(item.name, '', item.topSeconds ?? 600);
+    if (result.error === 'free_limit') {
+      Alert.alert(
+        'Timer Limit Reached',
+        'Free accounts can run up to 5 timers at once. Upgrade to Premium for unlimited timers.',
+      );
+    }
+    // result.error === 'busy' is a rapid double-tap — silently ignore.
   };
 
   return (

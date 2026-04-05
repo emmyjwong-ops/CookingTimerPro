@@ -114,70 +114,76 @@ export default function TimerCard({timer, navigation}) {
       timer.remainingSeconds < 60);
 
   return (
-    <Animated.View
+    // Outer card — static style, no opacity animation here so the
+    // Dismiss / +5 min buttons are always fully visible and tappable.
+    <View
       style={[
         styles.card,
         {
           backgroundColor: timer.isComplete ? C.completeBg : C.primaryBg,
           borderColor: timer.isComplete ? C.red : isUrgent ? C.red : C.border,
           borderWidth: timer.isComplete ? 2 : isUrgent ? 1 : 0.5,
-          // FIX: pulse the card's opacity using the native driver (replaces the
-          // no-op borderColor interpolation that used useNativeDriver: false).
-          opacity: timer.isComplete ? pulseAnim : 1,
         },
       ]}>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onLongPress={handleLongPress}
-        delayLongPress={400}>
-        <View style={styles.header}>
-          <View style={styles.nameRow}>
-            {timer.isComplete && <Text style={styles.bellIcon}>{'🔔'}</Text>}
-            <Text style={[styles.name, {color: C.primaryText}]} numberOfLines={1}>
-              {timer.name}
-            </Text>
-          </View>
-          {!timer.isComplete && (
-            <TouchableOpacity
-              onPress={() => pauseTimer(timer.id)}
-              hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-              <Text style={[styles.pauseBtn, {color: C.tealText}]}>
-                {timer.isRunning ? 'Pause' : 'Resume'}
+      {/* FIX: pulse only the timer content (name/time/progress), NOT the
+          action buttons — at 0.35 opacity the buttons were hard to see and
+          interact with. Native driver is still used for performance. */}
+      <Animated.View style={{opacity: timer.isComplete ? pulseAnim : 1}}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onLongPress={handleLongPress}
+          delayLongPress={400}>
+          <View style={styles.header}>
+            <View style={styles.nameRow}>
+              {timer.isComplete && <Text style={styles.bellIcon}>{'🔔'}</Text>}
+              <Text style={[styles.name, {color: C.primaryText}]} numberOfLines={1}>
+                {timer.name}
               </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {timer.note ? (
-          <Text style={[styles.note, {color: C.secondaryText}]} numberOfLines={1}>
-            {timer.note}
-          </Text>
-        ) : null}
-
-        <Text
-          style={[
-            styles.time,
-            {color: timer.isComplete ? C.red : C.primaryText},
-            timer.isComplete && styles.timeComplete,
-          ]}>
-          {timer.isComplete ? "Time's up!" : formatTime(timer.remainingSeconds)}
-        </Text>
-
-        {!timer.isComplete && (
-          <View style={[styles.progressTrack, {backgroundColor: C.secondaryBg}]}>
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  width: `${Math.max(progress * 100, 0)}%`,
-                  backgroundColor: statusColor,
-                },
-              ]}
-            />
+            </View>
+            {!timer.isComplete && (
+              <TouchableOpacity
+                onPress={() => pauseTimer(timer.id)}
+                hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
+                <Text style={[styles.pauseBtn, {color: C.tealText}]}>
+                  {timer.isRunning ? 'Pause' : 'Resume'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-        )}
-      </TouchableOpacity>
 
+          {timer.note ? (
+            <Text style={[styles.note, {color: C.secondaryText}]} numberOfLines={1}>
+              {timer.note}
+            </Text>
+          ) : null}
+
+          <Text
+            style={[
+              styles.time,
+              {color: timer.isComplete ? C.red : C.primaryText},
+              timer.isComplete && styles.timeComplete,
+            ]}>
+            {timer.isComplete ? "Time's up!" : formatTime(timer.remainingSeconds)}
+          </Text>
+
+          {!timer.isComplete && (
+            <View style={[styles.progressTrack, {backgroundColor: C.secondaryBg}]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: `${Math.max(progress * 100, 0)}%`,
+                    backgroundColor: statusColor,
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Action buttons are outside the pulsing Animated.View — always at
+          full opacity so the user can clearly see and tap them. */}
       {timer.isComplete && (
         <View style={styles.completeActions}>
           <TouchableOpacity
@@ -192,7 +198,7 @@ export default function TimerCard({timer, navigation}) {
           </TouchableOpacity>
         </View>
       )}
-    </Animated.View>
+    </View>
   );
 }
 

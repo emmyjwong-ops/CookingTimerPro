@@ -5,8 +5,11 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
 } from 'react-native';
+// FIX: use SafeAreaView from react-native-safe-area-context instead of the
+// built-in one from react-native — the context-aware version gives correct
+// insets on Android (e.g. devices with punch-hole cameras or navigation bars).
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTheme} from '../hooks/useTheme';
 import {useTimers} from '../context/TimerContext';
 import TimerCard from '../components/TimerCard';

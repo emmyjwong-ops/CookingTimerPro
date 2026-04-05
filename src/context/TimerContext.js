@@ -27,7 +27,7 @@ export function TimerProvider({children}) {
   const [cookStats, setCookStats] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const timersRef = useRef(timers);
-  const isAddingRef = useRef(false); // prevents race condition on rapid addTimer calls
+  const isAddingRef = useRef(false);
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -65,10 +65,9 @@ export function TimerProvider({children}) {
     }
   }, [timers, loaded]);
 
-  // Update the status-bar notification on a dedicated 1-second interval.
-  // Reading directly from timersRef + fresh endTime avoids the lag that
-  // occurred when React-batched state updates caused the notification to
-  // skip or duplicate seconds.
+  // Status-bar notification — dedicated 1-second interval reading directly
+  // from timersRef + fresh endTime to avoid batched-state lag.
+  // FIX: soonest timer is now selected by endTime (not stale remainingSeconds).
   useEffect(() => {
     if (!loaded) {
       return;
@@ -77,11 +76,12 @@ export function TimerProvider({children}) {
       const now = Date.now();
       const active = timersRef.current.filter(t => t.isRunning && !t.isComplete);
       if (active.length > 0) {
-        const soonest = active.reduce((a, b) =>
-          a.remainingSeconds < b.remainingSeconds ? a : b,
-        );
-        // Compute fresh remaining time from absolute endTime so the
-        // notification always shows the correct second.
+        // FIX: compare by absolute endTime for accurate selection.
+        const soonest = active.reduce((a, b) => {
+          const aEnd = a.endTime ?? Infinity;
+          const bEnd = b.endTime ?? Infinity;
+          return aEnd < bEnd ? a : b;
+        });
         const remaining = soonest.endTime
           ? Math.max(0, Math.floor((soonest.endTime - now) / 1000))
           : soonest.remainingSeconds;
@@ -93,20 +93,13 @@ export function TimerProvider({children}) {
     return () => clearInterval(notifInterval);
   }, [loaded]);
 
-  // Countdown tick — checks absolute endTime so accuracy is preserved even
-  // when the JS thread is throttled. Sound is triggered here in foreground;
-  // the background AlarmManager notification handles background completions.
-  //
-  // FIX: completing timers are identified BEFORE setTimers is called, so the
-  // sound side-effect is never inside a pure state-updater function (which
-  // React may invoke more than once in Strict Mode / concurrent mode).
+  // Countdown tick — identifies completions BEFORE setTimers so sound is
+  // never a side-effect inside a pure state updater.
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       const current = timersRef.current;
 
-      // Identify timers completing THIS tick (outside the updater — no side
-      // effects inside pure updater functions).
       const completing = current.filter(
         t =>
           t.isRunning &&
@@ -138,8 +131,6 @@ export function TimerProvider({children}) {
     return () => clearInterval(interval);
   }, [settings.alertSound, settings.vibration]);
 
-  // FIX: isAddingRef is always released in a finally block so a thrown
-  // exception can never leave it permanently stuck on true.
   const addTimer = useCallback(
     (name, note, totalSeconds) => {
       if (isAddingRef.current) {
@@ -147,21 +138,13 @@ export function TimerProvider({children}) {
       }
       isAddingRef.current = true;
       try {
-        // Check Android permissions on first use (non-blocking)
         ensureAndroidPermissions();
-
-        // FIX: use the same definition as activeTimerCount (running & !complete)
-        // so paused timers don't count against the free limit.
         const activeCount = timersRef.current.filter(
           t => t.isRunning && !t.isComplete,
         ).length;
         if (!settings.isPremium && activeCount >= MAX_FREE_TIMERS) {
           return {error: 'free_limit'};
         }
-
-        // Cook stats are now incremented in dismissTimer when isComplete, so
-        // only completed cooks are counted (not timers that were never used).
-
         const endTime = Date.now() + totalSeconds * 1000;
         const newTimer = {
           id: Date.now().toString(),
@@ -190,8 +173,6 @@ export function TimerProvider({children}) {
     [settings.isPremium, settings.vibration],
   );
 
-  // FIX: incrementCookStat moved here (was in addTimer) so only actually
-  // completed cooks are counted, not timers that were dismissed mid-way.
   const dismissTimer = useCallback(id => {
     const timer = timersRef.current.find(t => t.id === id);
     if (timer?.isComplete) {
@@ -205,8 +186,6 @@ export function TimerProvider({children}) {
     setTimers(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  // FIX: added settings.vibration to dep array so re-scheduling uses the
-  // current vibration preference, not the one captured at first render.
   const editTimer = useCallback(
     (id, name, note, totalSeconds) => {
       const endTime = Date.now() + totalSeconds * 1000;
@@ -232,9 +211,8 @@ export function TimerProvider({children}) {
     [settings.vibration],
   );
 
-  // FIX: notification calls moved OUTSIDE the setTimers updater — side effects
-  // must not live inside a pure updater function.
-  // FIX: added settings.vibration to dep array.
+  // FIX: compute fresh remaining from endTime instead of stale
+  // timersRef.current.remainingSeconds (could be up to 499ms old).
   const extendTimer = useCallback(
     (id, extraSeconds) => {
       stopCompletionSound();
@@ -242,8 +220,13 @@ export function TimerProvider({children}) {
       if (!timer) {
         return;
       }
-      const newRemaining = timer.remainingSeconds + extraSeconds;
-      const newEndTime = Date.now() + newRemaining * 1000;
+      const now = Date.now();
+      const freshRemaining =
+        timer.endTime && timer.isRunning
+          ? Math.max(0, Math.floor((timer.endTime - now) / 1000))
+          : timer.remainingSeconds;
+      const newRemaining = freshRemaining + extraSeconds;
+      const newEndTime = now + newRemaining * 1000;
       cancelTriggerNotification(id);
       scheduleTriggerNotification(
         id,
@@ -270,33 +253,40 @@ export function TimerProvider({children}) {
     [settings.vibration],
   );
 
-  // FIX: added settings.vibration to dep array.
+  // FIX: notification side effects moved OUTSIDE setTimers updater.
+  // Previously cancelTriggerNotification / scheduleTriggerNotification were
+  // called inside the pure updater function, which React may invoke twice.
   const pauseTimer = useCallback(
     id => {
-      setTimers(prev =>
-        prev.map(t => {
-          if (t.id !== id) {
-            return t;
-          }
-          if (t.isRunning) {
-            // Pausing: cancel the alarm, freeze remainingSeconds, clear endTime
-            cancelTriggerNotification(id);
-            stopServiceNotification();
-            return {...t, isRunning: false, endTime: null};
-          } else {
-            // Resuming: set a new endTime from current remainingSeconds
-            const newEndTime = Date.now() + t.remainingSeconds * 1000;
-            scheduleTriggerNotification(
-              id,
-              t.name,
-              t.note,
-              newEndTime,
-              settings.vibration,
-            );
-            return {...t, isRunning: true, endTime: newEndTime};
-          }
-        }),
-      );
+      const timer = timersRef.current.find(t => t.id === id);
+      if (!timer) {
+        return;
+      }
+      if (timer.isRunning) {
+        // Pausing: cancel alarm and freeze state
+        cancelTriggerNotification(id);
+        stopServiceNotification();
+        setTimers(prev =>
+          prev.map(t =>
+            t.id === id ? {...t, isRunning: false, endTime: null} : t,
+          ),
+        );
+      } else {
+        // Resuming: schedule new alarm from current remaining
+        const newEndTime = Date.now() + timer.remainingSeconds * 1000;
+        scheduleTriggerNotification(
+          id,
+          timer.name,
+          timer.note,
+          newEndTime,
+          settings.vibration,
+        );
+        setTimers(prev =>
+          prev.map(t =>
+            t.id === id ? {...t, isRunning: true, endTime: newEndTime} : t,
+          ),
+        );
+      }
     },
     [settings.vibration],
   );

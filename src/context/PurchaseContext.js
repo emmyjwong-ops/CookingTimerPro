@@ -97,6 +97,13 @@ export function PurchaseProvider({children}) {
       return;
     }
     userInitiatedRestore.current = true;
+    // FIX: safety timeout — if billing isn't connected yet when Restore is
+    // tapped, billing:restored may not fire until BillingModule.connect()
+    // completes internally. Without this, userInitiatedRestore stays true and
+    // the later automatic connect-triggered check shows a spurious dialog.
+    setTimeout(() => {
+      userInitiatedRestore.current = false;
+    }, 15000);
     BillingModule.restorePurchases();
     Alert.alert('Restore', 'Checking your previous purchases…');
   }, []);

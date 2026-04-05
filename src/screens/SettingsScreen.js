@@ -16,6 +16,7 @@ import {useTheme} from '../hooks/useTheme';
 import {useSettings} from '../context/SettingsContext';
 import {usePurchase} from '../context/PurchaseContext';
 import {ALARM_SOUNDS, getSoundFile} from '../constants/sounds';
+import {APP_VERSION} from '../constants/version';
 
 function SettingRow({label, right, onPress, C}) {
   const Wrapper = onPress ? TouchableOpacity : View;
@@ -55,13 +56,17 @@ export default function SettingsScreen({navigation}) {
     }
   };
 
-  // FIX: clean up any in-flight sound preview when the component unmounts
-  // so a pending setTimeout can't stop a sound that started for a different reason.
+  // Clean up pending timeouts on unmount.
   useEffect(() => {
     return () => {
       if (soundPreviewTimeout.current) {
         clearTimeout(soundPreviewTimeout.current);
         NativeModules.SoundModule?.stopBell();
+      }
+      // FIX: also clear the dev-tap reset timer to avoid a memory leak when
+      // the Settings screen is unmounted while the 1.5s window is open.
+      if (devTapTimer.current) {
+        clearTimeout(devTapTimer.current);
       }
     };
   }, []);
@@ -215,7 +220,7 @@ export default function SettingsScreen({navigation}) {
 
       <TouchableOpacity onPress={handleVersionTap} activeOpacity={1}>
         <Text style={[styles.version, {color: C.tertiaryText}]}>
-          CookingTimerPro v1.0.0
+          CookingTimerPro v{APP_VERSION}
         </Text>
       </TouchableOpacity>
 
