@@ -123,9 +123,10 @@ export function TimerProvider({children}) {
       if (!settings.isPremium && activeCount >= MAX_FREE_TIMERS) {
         return {error: 'free_limit'};
       }
-      incrementCookStat(name, totalSeconds).then(() =>
-        loadCookStats().then(stats => setCookStats(stats)),
-      );
+      incrementCookStat(name, totalSeconds)
+        .then(() => loadCookStats())
+        .then(stats => setCookStats(stats))
+        .catch(() => {});
       const endTime = Date.now() + totalSeconds * 1000;
       const newTimer = {
         id: Date.now().toString(),
@@ -204,9 +205,10 @@ export function TimerProvider({children}) {
           return t;
         }
         if (t.isRunning) {
-          // Pausing: cancel the alarm, freeze remainingSeconds
+          // Pausing: cancel the alarm, freeze remainingSeconds, clear endTime
+          // so restore logic doesn't recalculate from a stale endTime
           cancelTriggerNotification(id);
-          return {...t, isRunning: false};
+          return {...t, isRunning: false, endTime: null};
         } else {
           // Resuming: set a new endTime from current remainingSeconds
           const newEndTime = Date.now() + t.remainingSeconds * 1000;

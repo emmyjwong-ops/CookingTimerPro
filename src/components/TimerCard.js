@@ -39,6 +39,13 @@ export default function TimerCard({timer, navigation}) {
   const {dismissTimer, extendTimer, pauseTimer} = useTimers();
   const C = useTheme();
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (timer.isComplete) {
@@ -57,7 +64,12 @@ export default function TimerCard({timer, navigation}) {
         ]),
       );
       animation.start();
-      return () => animation.stop();
+      return () => {
+        animation.stop();
+        if (isMounted.current) {
+          pulseAnim.setValue(1);
+        }
+      };
     } else {
       pulseAnim.setValue(1);
     }
