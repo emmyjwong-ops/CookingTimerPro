@@ -102,8 +102,9 @@ export default function SettingsScreen({navigation}) {
   };
 
   return (
+    <View style={[styles.container, {backgroundColor: C.secondaryBg}]}>
     <ScrollView
-      style={[styles.container, {backgroundColor: C.secondaryBg}]}
+      style={styles.scroll}
       contentContainerStyle={styles.content}>
 
       {/* Premium upsell */}
@@ -218,57 +219,61 @@ export default function SettingsScreen({navigation}) {
         </Text>
       </TouchableOpacity>
 
-      {/* Sound picker modal */}
-      <Modal
-        visible={soundPickerVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSoundPickerVisible(false)}>
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setSoundPickerVisible(false)}>
-          <TouchableOpacity activeOpacity={1} style={[styles.modalSheet, {backgroundColor: C.primaryBg, borderColor: C.border}]}>
-            <Text style={[styles.modalTitle, {color: C.primaryText}]}>Alert Sound</Text>
-            {ALARM_SOUNDS.map(sound => {
-              const isSelected = sound.id === settings.alertSound;
-              const locked = sound.premium && !settings.isPremium;
-              return (
-                <TouchableOpacity
-                  key={sound.id}
-                  style={[
-                    styles.soundRow,
-                    {borderBottomColor: C.border},
-                    isSelected && {backgroundColor: C.tealBg},
-                  ]}
-                  onPress={() => handleSoundSelect(sound)}
-                  activeOpacity={0.6}>
-                  <Text style={[styles.soundLabel, {color: locked ? C.tertiaryText : C.primaryText}]}>
-                    {sound.label}
-                  </Text>
-                  {locked ? (
-                    <Text style={[styles.lockIcon, {color: C.tertiaryText}]}>🔒</Text>
-                  ) : isSelected ? (
-                    <Text style={[styles.checkIcon, {color: C.tealText}]}>✓</Text>
-                  ) : null}
-                </TouchableOpacity>
-              );
-            })}
-            <TouchableOpacity
-              style={[styles.modalCancel, {borderTopColor: C.border}]}
-              onPress={() => setSoundPickerVisible(false)}>
-              <Text style={[styles.modalCancelText, {color: C.secondaryText}]}>Cancel</Text>
-            </TouchableOpacity>
+    </ScrollView>
+
+    {/* Sound picker modal — outside ScrollView so it does not affect
+        the scroll content height or cut off the version text. */}
+    <Modal
+      visible={soundPickerVisible}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setSoundPickerVisible(false)}>
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setSoundPickerVisible(false)}>
+        <TouchableOpacity activeOpacity={1} style={[styles.modalSheet, {backgroundColor: C.primaryBg, borderColor: C.border}]}>
+          <Text style={[styles.modalTitle, {color: C.primaryText}]}>Alert Sound</Text>
+          {ALARM_SOUNDS.map(sound => {
+            const isSelected = sound.id === settings.alertSound;
+            const locked = sound.premium && !settings.isPremium;
+            return (
+              <TouchableOpacity
+                key={sound.id}
+                style={[
+                  styles.soundRow,
+                  {borderBottomColor: C.border},
+                  isSelected && {backgroundColor: C.tealBg},
+                ]}
+                onPress={() => handleSoundSelect(sound)}
+                activeOpacity={0.6}>
+                <Text style={[styles.soundLabel, {color: locked ? C.tertiaryText : C.primaryText}]}>
+                  {sound.label}
+                </Text>
+                {locked ? (
+                  <Text style={[styles.lockIcon, {color: C.tertiaryText}]}>🔒</Text>
+                ) : isSelected ? (
+                  <Text style={[styles.checkIcon, {color: C.tealText}]}>✓</Text>
+                ) : null}
+              </TouchableOpacity>
+            );
+          })}
+          <TouchableOpacity
+            style={[styles.modalCancel, {borderTopColor: C.border}]}
+            onPress={() => setSoundPickerVisible(false)}>
+            <Text style={[styles.modalCancelText, {color: C.secondaryText}]}>Cancel</Text>
           </TouchableOpacity>
         </TouchableOpacity>
-      </Modal>
-    </ScrollView>
+      </TouchableOpacity>
+    </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  content: {padding: 16, paddingBottom: 40},
+  scroll: {flex: 1},
+  content: {padding: 16, paddingBottom: 80},
   premiumCard: {
     borderRadius: 12,
     borderWidth: 1.5,

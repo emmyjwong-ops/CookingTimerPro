@@ -65,21 +65,33 @@ export function TimerProvider({children}) {
     }
   }, [timers, loaded]);
 
-  // Update the status-bar service notification when timers change
+  // Update the status-bar notification on a dedicated 1-second interval.
+  // Reading directly from timersRef + fresh endTime avoids the lag that
+  // occurred when React-batched state updates caused the notification to
+  // skip or duplicate seconds.
   useEffect(() => {
     if (!loaded) {
       return;
     }
-    const active = timers.filter(t => t.isRunning && !t.isComplete);
-    if (active.length > 0) {
-      const soonest = active.reduce((a, b) =>
-        a.remainingSeconds < b.remainingSeconds ? a : b,
-      );
-      updateServiceNotification(soonest.name, soonest.remainingSeconds);
-    } else {
-      stopServiceNotification();
-    }
-  }, [timers, loaded]);
+    const notifInterval = setInterval(() => {
+      const now = Date.now();
+      const active = timersRef.current.filter(t => t.isRunning && !t.isComplete);
+      if (active.length > 0) {
+        const soonest = active.reduce((a, b) =>
+          a.remainingSeconds < b.remainingSeconds ? a : b,
+        );
+        // Compute fresh remaining time from absolute endTime so the
+        // notification always shows the correct second.
+        const remaining = soonest.endTime
+          ? Math.max(0, Math.floor((soonest.endTime - now) / 1000))
+          : soonest.remainingSeconds;
+        updateServiceNotification(soonest.name, remaining);
+      } else {
+        stopServiceNotification();
+      }
+    }, 1000);
+    return () => clearInterval(notifInterval);
+  }, [loaded]);
 
   // Countdown tick — checks absolute endTime so accuracy is preserved even
   // when the JS thread is throttled. Sound is triggered here in foreground;

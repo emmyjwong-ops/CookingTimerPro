@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
   useCallback,
 } from 'react';
 import {NativeModules, NativeEventEmitter, Alert} from 'react-native';
@@ -17,6 +18,10 @@ export function PurchaseProvider({children}) {
   const {settings, updateSetting} = useSettings();
   const [purchasing, setPurchasing] = useState(false);
   const [displayPrice, setDisplayPrice] = useState('$2.99');
+  // Track whether the user explicitly tapped "Restore purchase" so we only
+  // show "No purchase found" for intentional restore attempts, not for the
+  // automatic billing:restored event that fires on every app launch.
+  const userInitiatedRestore = useRef(false);
 
   // Connect to Google Play Billing on mount and listen for events
   useEffect(() => {
@@ -42,18 +47,22 @@ export function PurchaseProvider({children}) {
         );
       }),
 
-      // Restore check finished
+      // Restore check finished — fires both on explicit restore AND automatically
+      // on every app launch when BillingModule.connect() verifies ownership.
+      // Only show the "no purchase" alert when the user explicitly tapped Restore.
       billingEmitter.addListener('billing:restored', ({owned}) => {
         if (owned) {
           updateSetting('isPremium', true);
-          Alert.alert('✓ Restored', 'Premium has been restored successfully.');
-        } else {
-          // FIX: previously showed nothing — user was left unsure if restore worked.
+          if (userInitiatedRestore.current) {
+            Alert.alert('✓ Restored', 'Premium has been restored successfully.');
+          }
+        } else if (userInitiatedRestore.current) {
           Alert.alert(
             'No purchase found',
             'We could not find a previous Premium purchase for this account.',
           );
         }
+        userInitiatedRestore.current = false;
       }),
 
       // User cancelled — no message needed
@@ -87,6 +96,7 @@ export function PurchaseProvider({children}) {
     if (!BillingModule) {
       return;
     }
+    userInitiatedRestore.current = true;
     BillingModule.restorePurchases();
     Alert.alert('Restore', 'Checking your previous purchases…');
   }, []);
