@@ -27,7 +27,7 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
         Vibration.vibrate([0, 500, 200, 500]);
       }
     } catch (_) {
-      Vibration.vibrate([0, 500, 200, 500]);
+      // AsyncStorage failed — don't vibrate, respect silence over noise
     }
   }
 });

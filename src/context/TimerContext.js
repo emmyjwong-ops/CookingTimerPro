@@ -25,6 +25,7 @@ export function TimerProvider({children}) {
   const [cookStats, setCookStats] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const timersRef = useRef(timers);
+  const isAddingRef = useRef(false); // prevents race condition on rapid addTimer calls
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -114,8 +115,13 @@ export function TimerProvider({children}) {
 
   const addTimer = useCallback(
     (name, note, totalSeconds) => {
+      if (isAddingRef.current) {
+        return {error: 'busy'};
+      }
+      isAddingRef.current = true;
       const activeCount = timersRef.current.filter(t => !t.isComplete).length;
       if (!settings.isPremium && activeCount >= MAX_FREE_TIMERS) {
+        isAddingRef.current = false;
         return {error: 'free_limit'};
       }
       incrementCookStat(name, totalSeconds)
@@ -137,6 +143,7 @@ export function TimerProvider({children}) {
       // Schedule alarm-based completion notification
       scheduleTriggerNotification(newTimer.id, name, note, endTime);
       setTimers(prev => [newTimer, ...prev]);
+      isAddingRef.current = false;
       return {error: null, timer: newTimer};
     },
     [settings.isPremium],
@@ -201,8 +208,8 @@ export function TimerProvider({children}) {
         }
         if (t.isRunning) {
           // Pausing: cancel the alarm, freeze remainingSeconds, clear endTime
-          // so restore logic doesn't recalculate from a stale endTime
           cancelTriggerNotification(id);
+          stopServiceNotification();
           return {...t, isRunning: false, endTime: null};
         } else {
           // Resuming: set a new endTime from current remainingSeconds

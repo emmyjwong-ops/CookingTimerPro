@@ -18,7 +18,8 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun playBell() {
         try {
-            // Stop any currently playing alarm first
+            // Stop and release any existing player BEFORE creating a new one.
+            // Prevents orphaned MediaPlayer instances on rapid successive calls.
             stopPlayer()
 
             val context = reactContext.applicationContext
@@ -45,12 +46,15 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
             }
             mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
             afd.close()
-            mp.isLooping = true   // Keep ringing until stopBell() is called
+            mp.isLooping = true
             mp.prepare()
-            mp.start()
 
+            // Assign to player BEFORE start() so stopBell() can always reach it
             player = mp
-        } catch (_: Exception) {}
+            mp.start()
+        } catch (e: Exception) {
+            player = null
+        }
     }
 
     @ReactMethod
