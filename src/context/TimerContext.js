@@ -6,7 +6,6 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-import notifee, {EventType} from '@notifee/react-native';
 import {saveTimers, loadTimers, incrementCookStat, loadCookStats} from '../utils/storage';
 import {
   scheduleTriggerNotification,
@@ -79,43 +78,39 @@ export function TimerProvider({children}) {
     }
   }, [timers, loaded]);
 
-  // Play alarm sound when a trigger notification fires while app is in foreground.
-  // This fires at exactly endTime via AlarmManager — no delay.
-  useEffect(() => {
-    const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
-      if (
-        type === EventType.DELIVERED &&
-        detail.notification?.id?.startsWith('trigger-')
-      ) {
-        playCompletionSound(settings.vibration);
-      }
-    });
-    return unsubscribe;
-  }, [settings.vibration]);
-
-  // Countdown tick — only updates UI state and service notification.
-  // Sound is handled by onForegroundEvent / onBackgroundEvent above.
+  // Countdown tick — updates UI and plays sound at exactly the right moment.
+  // Sound is triggered here (foreground) or by onBackgroundEvent (background).
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
+      let anyCompleted = false;
+
       setTimers(prev =>
         prev.map(t => {
           if (t.isRunning && !t.isComplete && t.endTime) {
             const remaining = Math.max(0, Math.floor((t.endTime - now) / 1000));
+            const justCompleted = remaining === 0;
+            if (justCompleted) {
+              anyCompleted = true;
+            }
             return {
               ...t,
               remainingSeconds: remaining,
-              isRunning: remaining > 0,
-              isComplete: remaining === 0,
+              isRunning: !justCompleted,
+              isComplete: justCompleted,
             };
           }
           return t;
         }),
       );
-    }, 1000);
+
+      if (anyCompleted) {
+        playCompletionSound(settings.vibration);
+      }
+    }, 500); // 500ms interval = max 0.5s delay, catches exact second reliably
 
     return () => clearInterval(interval);
-  }, []);
+  }, [settings.vibration]);
 
   const addTimer = useCallback(
     (name, note, totalSeconds) => {

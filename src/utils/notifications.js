@@ -15,15 +15,15 @@ export async function configureNotifications() {
   await notifee.requestPermission();
 
   if (Platform.OS === 'android') {
-    // High-importance channel — plays bell sound on timer completion
+    // High-importance channel — sound only, NO channel-level vibration.
+    // Vibration is handled entirely in JS so the user setting is respected.
     await notifee.createChannel({
-      id: 'cooking-timer-alert',
+      id: 'cooking-timer-alert-v2',
       name: 'Timer Complete',
       importance: AndroidImportance.HIGH,
       visibility: AndroidVisibility.PUBLIC,
       sound: 'bell',
-      vibration: true,
-      vibrationPattern: [300, 500, 300, 500],
+      vibration: false,
     });
 
     // Low-importance channel — ongoing "timer running" entry in status bar
@@ -47,7 +47,7 @@ export async function scheduleTriggerNotification(timerId, timerName, note, endT
       title: '⏰ Timer Complete',
       body,
       android: {
-        channelId: 'cooking-timer-alert',
+        channelId: 'cooking-timer-alert-v2',
         importance: AndroidImportance.HIGH,
         visibility: AndroidVisibility.PUBLIC,
         pressAction: {id: 'default'},
