@@ -1,10 +1,29 @@
+# Dependencies
 node_modules/
+
+# Android build
 android/.gradle/
 android/app/build/
 android/build/
+android/app/.cxx/
+android/local.properties
+
+# iOS
 ios/build/
-.env
+ios/Pods/
+
+# Keystore — NEVER commit these
 *.keystore
 *.jks
+
+# Environment
+.env
+
+# macOS
 .DS_Store
+
+# Logs
 *.log
+
+# Metro
+.metro-health-check*
