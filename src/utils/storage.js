@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const TIMERS_KEY = '@CookingTimerPro:timers';
 const SETTINGS_KEY = '@CookingTimerPro:settings';
 const COOK_STATS_KEY = '@CookingTimerPro:cookStats';
+const PRESETS_KEY = '@CookingTimerPro:presets';
+const GROUPS_KEY = '@CookingTimerPro:groups';
 
 export async function saveTimers(timers) {
   try {
@@ -37,6 +39,42 @@ export async function loadSettings() {
   } catch (e) {
     console.warn('Failed to load settings', e);
     return null;
+  }
+}
+
+export async function savePresets(presets) {
+  try {
+    await AsyncStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+  } catch (e) {
+    console.warn('Failed to save presets', e);
+  }
+}
+
+export async function loadPresets() {
+  try {
+    const raw = await AsyncStorage.getItem(PRESETS_KEY);
+    return raw ? JSON.parse(raw) : null; // null means use DEFAULT_PRESETS
+  } catch (e) {
+    console.warn('Failed to load presets', e);
+    return null;
+  }
+}
+
+export async function saveGroups(groups) {
+  try {
+    await AsyncStorage.setItem(GROUPS_KEY, JSON.stringify(groups));
+  } catch (e) {
+    console.warn('Failed to save groups', e);
+  }
+}
+
+export async function loadGroups() {
+  try {
+    const raw = await AsyncStorage.getItem(GROUPS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn('Failed to load groups', e);
+    return [];
   }
 }
 

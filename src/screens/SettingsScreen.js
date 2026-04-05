@@ -29,7 +29,7 @@ function SettingRow({label, right, onPress, C}) {
   );
 }
 
-export default function SettingsScreen() {
+export default function SettingsScreen({navigation}) {
   const {settings, updateSetting} = useSettings();
   const {buyPremium, restorePurchases, purchasing, displayPrice} = usePurchase();
   const C = useTheme();
@@ -148,7 +148,17 @@ export default function SettingsScreen() {
         <SettingRow
           label="Manage presets"
           C={C}
-          onPress={() => Alert.alert('Presets', 'Custom presets coming in v1.1')}
+          onPress={() => navigation.navigate('ManagePresets')}
+        />
+        <SettingRow
+          label="Timer groups"
+          C={C}
+          right={
+            !settings.isPremium ? (
+              <Text style={[styles.rowBadge, {color: '#F59E0B', borderColor: '#F59E0B'}]}>Premium</Text>
+            ) : undefined
+          }
+          onPress={() => navigation.navigate('TimerGroups')}
         />
         <SettingRow
           label="Rate the app"
@@ -257,6 +267,15 @@ const styles = StyleSheet.create({
   rowLabel: {fontSize: 15},
   rowValue: {fontSize: 14},
   rowChevron: {fontSize: 18},
+  rowBadge: {
+    fontSize: 11,
+    fontWeight: '600',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    overflow: 'hidden',
+  },
   version: {fontSize: 12, textAlign: 'center', marginTop: 24},
   modalOverlay: {
     flex: 1,

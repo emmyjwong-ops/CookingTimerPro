@@ -1,5 +1,5 @@
 import React, {createContext, useContext, useState, useEffect} from 'react';
-import {saveSettings, loadSettings} from '../utils/storage';
+import {saveSettings, loadSettings, savePresets, loadPresets} from '../utils/storage';
 
 const SettingsContext = createContext();
 
@@ -15,6 +15,9 @@ export function SettingsProvider({children}) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
+  // null = use DEFAULT_PRESETS from constants; array = user's custom list
+  const [customPresets, setCustomPresets] = useState(null);
+
   useEffect(() => {
     loadSettings().then(saved => {
       if (saved) {
@@ -22,6 +25,7 @@ export function SettingsProvider({children}) {
       }
       setLoaded(true);
     });
+    loadPresets().then(p => setCustomPresets(p));
   }, []);
 
   useEffect(() => {
@@ -34,8 +38,14 @@ export function SettingsProvider({children}) {
     setSettings(prev => ({...prev, [key]: value}));
   };
 
+  const updatePresets = presets => {
+    setCustomPresets(presets);
+    savePresets(presets);
+  };
+
   return (
-    <SettingsContext.Provider value={{settings, updateSetting}}>
+    <SettingsContext.Provider
+      value={{settings, updateSetting, customPresets, updatePresets}}>
       {children}
     </SettingsContext.Provider>
   );

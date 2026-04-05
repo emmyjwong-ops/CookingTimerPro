@@ -1,12 +1,24 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView} from 'react-native';
 import {useTheme} from '../hooks/useTheme';
 import {DEFAULT_PRESETS} from '../constants/presets';
 import {useTimers} from '../context/TimerContext';
+import {useSettings} from '../context/SettingsContext';
+
+function formatPresetTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0 && m > 0) {return `${h}h ${m}m`;}
+  if (h > 0) {return `${h}h`;}
+  return `${m}m`;
+}
 
 export default function QuickPresets() {
   const {addTimer} = useTimers();
+  const {customPresets} = useSettings();
   const C = useTheme();
+
+  const presets = customPresets ?? DEFAULT_PRESETS;
 
   const handlePreset = preset => {
     const result = addTimer(preset.name, '', preset.seconds);
@@ -18,11 +30,18 @@ export default function QuickPresets() {
     }
   };
 
+  if (presets.length === 0) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <Text style={[styles.label, {color: C.tertiaryText}]}>Quick start</Text>
-      <View style={styles.row}>
-        {DEFAULT_PRESETS.map(preset => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}>
+        {presets.map(preset => (
           <TouchableOpacity
             key={preset.id}
             style={[styles.pill, {backgroundColor: C.tealBg}]}
@@ -30,11 +49,11 @@ export default function QuickPresets() {
             activeOpacity={0.7}>
             <Text style={[styles.pillName, {color: C.tealText}]}>{preset.name}</Text>
             <Text style={[styles.pillTime, {color: C.tealText}]}>
-              {Math.floor(preset.seconds / 60)}m
+              {formatPresetTime(preset.seconds)}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -48,8 +67,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 8,
   },
-  row: {flexDirection: 'row', gap: 8},
-  pill: {flex: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center'},
+  row: {gap: 8, paddingRight: 4},
+  pill: {
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    minWidth: 64,
+  },
   pillName: {fontSize: 13, fontWeight: '500'},
   pillTime: {fontSize: 11, marginTop: 2, opacity: 0.7},
 });

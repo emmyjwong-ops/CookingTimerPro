@@ -3,6 +3,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import AddTimerScreen from '../screens/AddTimerScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import ManagePresetsScreen from '../screens/ManagePresetsScreen';
+import TimerGroupsScreen from '../screens/TimerGroupsScreen';
 import {useTheme} from '../hooks/useTheme';
 
 const Stack = createNativeStackNavigator();
@@ -36,6 +38,16 @@ export default function AppNavigator() {
         name="Settings"
         component={SettingsScreen}
         options={{title: 'Settings'}}
+      />
+      <Stack.Screen
+        name="ManagePresets"
+        component={ManagePresetsScreen}
+        options={{title: 'Manage Presets'}}
+      />
+      <Stack.Screen
+        name="TimerGroups"
+        component={TimerGroupsScreen}
+        options={{title: 'Timer Groups'}}
       />
     </Stack.Navigator>
   );
