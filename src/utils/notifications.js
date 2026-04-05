@@ -5,6 +5,12 @@ import notifee, {
   TriggerType,
 } from '@notifee/react-native';
 
+// Channel IDs — one with vibration, one without.
+// Android caches channel settings permanently, so we use separate channels
+// rather than trying to update vibration on an existing channel.
+const CHANNEL_SOUND_ONLY   = 'cooking-timer-sound-only';
+const CHANNEL_SOUND_VIBRATE = 'cooking-timer-sound-vibrate';
+
 function formatRemaining(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -15,18 +21,28 @@ export async function configureNotifications() {
   await notifee.requestPermission();
 
   if (Platform.OS === 'android') {
-    // High-importance channel — sound only, NO channel-level vibration.
-    // Vibration is handled entirely in JS so the user setting is respected.
+    // Sound only — no channel-level vibration
     await notifee.createChannel({
-      id: 'cooking-timer-alert-v2',
-      name: 'Timer Complete',
+      id: CHANNEL_SOUND_ONLY,
+      name: 'Timer Complete (sound only)',
       importance: AndroidImportance.HIGH,
       visibility: AndroidVisibility.PUBLIC,
       sound: 'bell',
       vibration: false,
     });
 
-    // Low-importance channel — ongoing "timer running" entry in status bar
+    // Sound + vibration
+    await notifee.createChannel({
+      id: CHANNEL_SOUND_VIBRATE,
+      name: 'Timer Complete (sound + vibration)',
+      importance: AndroidImportance.HIGH,
+      visibility: AndroidVisibility.PUBLIC,
+      sound: 'bell',
+      vibration: true,
+      vibrationPattern: [0, 500, 200, 500],
+    });
+
+    // Ongoing status bar notification — always silent
     await notifee.createChannel({
       id: 'cooking-timer-ongoing',
       name: 'Active Timers',
@@ -37,9 +53,17 @@ export async function configureNotifications() {
 }
 
 // Schedule a completion notification via Android AlarmManager.
-// This fires at exactly endTime even if the app is killed.
-export async function scheduleTriggerNotification(timerId, timerName, note, endTime) {
+// vibrationEnabled controls which channel is used — the channel itself
+// handles vibration so Android's system respects it correctly.
+export async function scheduleTriggerNotification(
+  timerId,
+  timerName,
+  note,
+  endTime,
+  vibrationEnabled = true,
+) {
   const body = note ? `${timerName} is done! (${note})` : `${timerName} is done!`;
+  const channelId = vibrationEnabled ? CHANNEL_SOUND_VIBRATE : CHANNEL_SOUND_ONLY;
 
   await notifee.createTriggerNotification(
     {
@@ -47,7 +71,7 @@ export async function scheduleTriggerNotification(timerId, timerName, note, endT
       title: '⏰ Timer Complete',
       body,
       android: {
-        channelId: 'cooking-timer-alert-v2',
+        channelId,
         importance: AndroidImportance.HIGH,
         visibility: AndroidVisibility.PUBLIC,
         pressAction: {id: 'default'},
@@ -60,20 +84,20 @@ export async function scheduleTriggerNotification(timerId, timerName, note, endT
       type: TriggerType.TIMESTAMP,
       timestamp: endTime,
       alarmManager: {
-        allowWhileIdle: true, // fires even in Doze mode
+        allowWhileIdle: true,
       },
     },
   );
 }
 
-// Cancel a scheduled trigger notification (e.g. when timer is dismissed/edited).
+// Cancel a scheduled trigger notification.
 export async function cancelTriggerNotification(timerId) {
   try {
     await notifee.cancelNotification(`trigger-${timerId}`);
   } catch (_) {}
 }
 
-// Updates (or creates) the persistent notification in the status bar.
+// Updates the persistent notification in the status bar.
 export async function updateServiceNotification(timerName, remainingSeconds) {
   await notifee.displayNotification({
     id: 'timer-service',
@@ -96,7 +120,9 @@ export async function stopServiceNotification() {
   } catch (_) {}
 }
 
-// Starts looping bell sound + vibration on timer completion.
+// Plays bell sound in foreground. Vibration is already handled by the
+// notification channel when the trigger fires — only vibrate here if
+// the app is in foreground (where no notification is displayed).
 export function playCompletionSound(vibrationEnabled = true) {
   NativeModules.SoundModule?.playBell();
   if (vibrationEnabled) {
@@ -104,7 +130,7 @@ export function playCompletionSound(vibrationEnabled = true) {
   }
 }
 
-// Stops the looping bell sound (called on Dismiss or +5 min).
+// Stops the looping bell sound.
 export function stopCompletionSound() {
   NativeModules.SoundModule?.stopBell();
 }

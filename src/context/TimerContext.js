@@ -140,13 +140,12 @@ export function TimerProvider({children}) {
         isComplete: false,
         createdAt: Date.now(),
       };
-      // Schedule alarm-based completion notification
-      scheduleTriggerNotification(newTimer.id, name, note, endTime);
+      scheduleTriggerNotification(newTimer.id, name, note, endTime, settings.vibration);
       setTimers(prev => [newTimer, ...prev]);
       isAddingRef.current = false;
       return {error: null, timer: newTimer};
     },
-    [settings.isPremium],
+    [settings.isPremium, settings.vibration],
   );
 
   const dismissTimer = useCallback(id => {
@@ -158,7 +157,7 @@ export function TimerProvider({children}) {
   const editTimer = useCallback((id, name, note, totalSeconds) => {
     const endTime = Date.now() + totalSeconds * 1000;
     cancelTriggerNotification(id);
-    scheduleTriggerNotification(id, name, note, endTime);
+    scheduleTriggerNotification(id, name, note, endTime, settings.vibration);
     setTimers(prev =>
       prev.map(t =>
         t.id === id
@@ -187,7 +186,7 @@ export function TimerProvider({children}) {
         const newRemaining = t.remainingSeconds + extraSeconds;
         const newEndTime = Date.now() + newRemaining * 1000;
         cancelTriggerNotification(id);
-        scheduleTriggerNotification(id, t.name, t.note, newEndTime);
+        scheduleTriggerNotification(id, t.name, t.note, newEndTime, settings.vibration);
         return {
           ...t,
           remainingSeconds: newRemaining,
@@ -214,7 +213,7 @@ export function TimerProvider({children}) {
         } else {
           // Resuming: set a new endTime from current remainingSeconds
           const newEndTime = Date.now() + t.remainingSeconds * 1000;
-          scheduleTriggerNotification(id, t.name, t.note, newEndTime);
+          scheduleTriggerNotification(id, t.name, t.note, newEndTime, settings.vibration);
           return {...t, isRunning: true, endTime: newEndTime};
         }
       }),
