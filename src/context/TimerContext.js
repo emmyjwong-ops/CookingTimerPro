@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import {saveTimers, loadTimers, incrementCookStat, loadCookStats} from '../utils/storage';
 import {ensureAndroidPermissions} from '../utils/androidPermissions';
+import {getSoundFile} from '../constants/sounds';
 import {
   scheduleTriggerNotification,
   cancelTriggerNotification,
@@ -107,7 +108,7 @@ export function TimerProvider({children}) {
       );
 
       if (anyCompleted) {
-        playCompletionSound(settings.vibration);
+        playCompletionSound(getSoundFile(settings.alertSound), settings.vibration);
       }
     }, 500); // 500ms interval = max 0.5s delay, catches exact second reliably
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,13 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Modal,
+  NativeModules,
 } from 'react-native';
 import {useTheme} from '../hooks/useTheme';
 import {useSettings} from '../context/SettingsContext';
 import {usePurchase} from '../context/PurchaseContext';
+import {ALARM_SOUNDS, getSoundFile} from '../constants/sounds';
 
 function SettingRow({label, right, onPress, C}) {
   const Wrapper = onPress ? TouchableOpacity : View;
@@ -30,8 +33,30 @@ export default function SettingsScreen() {
   const {settings, updateSetting} = useSettings();
   const {buyPremium, restorePurchases, purchasing, displayPrice} = usePurchase();
   const C = useTheme();
+  const [soundPickerVisible, setSoundPickerVisible] = useState(false);
 
   const darkModeLabel = {light: 'Light', dark: 'Dark'};
+
+  const currentSound = ALARM_SOUNDS.find(s => s.id === settings.alertSound) ?? ALARM_SOUNDS[0];
+
+  const handleSoundSelect = sound => {
+    if (sound.premium && !settings.isPremium) {
+      Alert.alert(
+        'Premium Feature',
+        'Unlock all alarm sounds by upgrading to Premium.',
+        [
+          {text: 'Not now', style: 'cancel'},
+          {text: `Upgrade for ${displayPrice}`, onPress: buyPremium},
+        ],
+      );
+      return;
+    }
+    updateSetting('alertSound', sound.id);
+    // Preview the sound
+    NativeModules.SoundModule?.playBell(getSoundFile(sound.id));
+    setTimeout(() => NativeModules.SoundModule?.stopBell(), 2500);
+    setSoundPickerVisible(false);
+  };
 
   const cycleDarkMode = () => {
     updateSetting('darkMode', settings.darkMode === 'dark' ? 'light' : 'dark');
@@ -85,8 +110,8 @@ export default function SettingsScreen() {
         <SettingRow
           label="Alert sound"
           C={C}
-          right={<Text style={[styles.rowValue, {color: C.secondaryText}]}>{settings.alertSound}</Text>}
-          onPress={() => Alert.alert('Alert Sound', 'Sound picker coming in v1.1')}
+          right={<Text style={[styles.rowValue, {color: C.secondaryText}]}>{currentSound.label}</Text>}
+          onPress={() => setSoundPickerVisible(true)}
         />
         <SettingRow
           label="Vibration"
@@ -135,6 +160,51 @@ export default function SettingsScreen() {
       <Text style={[styles.version, {color: C.tertiaryText}]}>
         CookingTimerPro v1.0.0
       </Text>
+
+      {/* Sound picker modal */}
+      <Modal
+        visible={soundPickerVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSoundPickerVisible(false)}>
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setSoundPickerVisible(false)}>
+          <TouchableOpacity activeOpacity={1} style={[styles.modalSheet, {backgroundColor: C.primaryBg, borderColor: C.border}]}>
+            <Text style={[styles.modalTitle, {color: C.primaryText}]}>Alert Sound</Text>
+            {ALARM_SOUNDS.map(sound => {
+              const isSelected = sound.id === settings.alertSound;
+              const locked = sound.premium && !settings.isPremium;
+              return (
+                <TouchableOpacity
+                  key={sound.id}
+                  style={[
+                    styles.soundRow,
+                    {borderBottomColor: C.border},
+                    isSelected && {backgroundColor: C.tealBg},
+                  ]}
+                  onPress={() => handleSoundSelect(sound)}
+                  activeOpacity={0.6}>
+                  <Text style={[styles.soundLabel, {color: locked ? C.tertiaryText : C.primaryText}]}>
+                    {sound.label}
+                  </Text>
+                  {locked ? (
+                    <Text style={[styles.lockIcon, {color: C.tertiaryText}]}>🔒</Text>
+                  ) : isSelected ? (
+                    <Text style={[styles.checkIcon, {color: C.tealText}]}>✓</Text>
+                  ) : null}
+                </TouchableOpacity>
+              );
+            })}
+            <TouchableOpacity
+              style={[styles.modalCancel, {borderTopColor: C.border}]}
+              onPress={() => setSoundPickerVisible(false)}>
+              <Text style={[styles.modalCancelText, {color: C.secondaryText}]}>Cancel</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -188,4 +258,42 @@ const styles = StyleSheet.create({
   rowValue: {fontSize: 14},
   rowChevron: {fontSize: 18},
   version: {fontSize: 12, textAlign: 'center', marginTop: 24},
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderWidth: 0.5,
+    paddingTop: 8,
+    paddingBottom: 32,
+  },
+  modalTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingVertical: 14,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  soundRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+  },
+  soundLabel: {fontSize: 16},
+  lockIcon: {fontSize: 15},
+  checkIcon: {fontSize: 18, fontWeight: '700'},
+  modalCancel: {
+    marginTop: 8,
+    borderTopWidth: 0.5,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  modalCancelText: {fontSize: 16},
 });

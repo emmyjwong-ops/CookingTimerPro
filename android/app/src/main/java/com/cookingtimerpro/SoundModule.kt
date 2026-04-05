@@ -21,13 +21,19 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
         reactContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
 
+    // Play a sound file from res/raw by name (without extension), looping until stopBell() is called.
+    // Falls back to "bell" if the requested file is not found.
     @ReactMethod
-    fun playBell() {
+    fun playBell(soundFile: String = "bell") {
         try {
             stopPlayer()
 
             val context = reactContext.applicationContext
-            val resId = context.resources.getIdentifier("bell", "raw", context.packageName)
+            var resId = context.resources.getIdentifier(soundFile, "raw", context.packageName)
+            if (resId == 0) {
+                // Fallback to bell if requested sound not found
+                resId = context.resources.getIdentifier("bell", "raw", context.packageName)
+            }
             if (resId == 0) return
 
             val mp = MediaPlayer()
@@ -44,8 +50,7 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
                 mp.setAudioStreamType(AudioManager.STREAM_ALARM)
             }
 
-            // Request audio focus so we behave correctly during phone calls
-            // and other audio interruptions (API 26+)
+            // Request audio focus — stops playing gracefully during phone calls
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
                     .setAudioAttributes(audioAttributes)
@@ -54,7 +59,6 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
                         when (focusChange) {
                             AudioManager.AUDIOFOCUS_LOSS,
                             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> stopPlayer()
-                            // DUCK and regain: keep playing at current volume
                         }
                     }
                     .build()
@@ -73,8 +77,6 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
             afd.close()
             mp.isLooping = true
             mp.prepare()
-
-            // Assign before start() so stopBell() can always reach it
             player = mp
             mp.start()
         } catch (e: Exception) {
@@ -96,7 +98,6 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
         } catch (_: Exception) {}
         player = null
 
-        // Release audio focus when done
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }

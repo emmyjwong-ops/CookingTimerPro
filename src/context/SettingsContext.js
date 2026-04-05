@@ -4,7 +4,7 @@ import {saveSettings, loadSettings} from '../utils/storage';
 const SettingsContext = createContext();
 
 const DEFAULT_SETTINGS = {
-  alertSound: 'default',
+  alertSound: 'bell',
   vibration: true,
   keepScreenOn: false,
   darkMode: 'light', // 'light' | 'dark'

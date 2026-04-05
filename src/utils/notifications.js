@@ -120,11 +120,10 @@ export async function stopServiceNotification() {
   } catch (_) {}
 }
 
-// Plays bell sound in foreground. Vibration is already handled by the
-// notification channel when the trigger fires — only vibrate here if
-// the app is in foreground (where no notification is displayed).
-export function playCompletionSound(vibrationEnabled = true) {
-  NativeModules.SoundModule?.playBell();
+// Plays the chosen alarm sound in foreground.
+// soundFile = filename in res/raw (without extension), e.g. "bell", "sound_soft_chime"
+export function playCompletionSound(soundFile = 'bell', vibrationEnabled = true) {
+  NativeModules.SoundModule?.playBell(soundFile);
   if (vibrationEnabled) {
     Vibration.vibrate([0, 500, 200, 500, 200, 500]);
   }
