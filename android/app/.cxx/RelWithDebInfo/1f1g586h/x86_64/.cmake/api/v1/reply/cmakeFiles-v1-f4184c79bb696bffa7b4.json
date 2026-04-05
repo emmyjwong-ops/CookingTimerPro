@@ -1,0 +1,437 @@
+{
+	"globsDependent" : 
+	[
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/android/app/build/generated/autolinking/src/main/jni/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/android/app/build/generated/autolinking/src/main/jni/autolinking.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/AsyncStorageSpec-generated.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/AsyncStorageSpec/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/AsyncStorageSpec/ComponentDescriptors.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/AsyncStorageSpec/EventEmitters.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/AsyncStorageSpec/Props.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/AsyncStorageSpec/ShadowNodes.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/AsyncStorageSpec/States.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/*.cpp",
+			"listDirectories" : true,
+			"paths" : []
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../../common/cpp/react/renderer/components/safeareacontext/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../../common/cpp/react/renderer/components/safeareacontext/RNCSafeAreaViewShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../../common/cpp/react/renderer/components/safeareacontext/RNCSafeAreaViewState.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/safeareacontext-generated.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/safeareacontext/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/safeareacontext/ComponentDescriptors.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/safeareacontext/EventEmitters.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/safeareacontext/Props.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/safeareacontext/ShadowNodes.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/safeareacontext/States.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/rnscreens.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSFullWindowOverlayShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSModalScreenShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSSafeAreaViewShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSSafeAreaViewState.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenShadowNodeCommitHook.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenStackHeaderConfigShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenStackHeaderConfigState.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenStackHeaderSubviewShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenStackHeaderSubviewState.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenState.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSSplitViewScreenShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSTabsBottomAccessoryShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSTabsHostShadowNode.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSTabsHostState.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/utils/*.cpp",
+			"listDirectories" : true,
+			"paths" : []
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/ComponentDescriptors.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/EventEmitters.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/Props.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/ShadowNodes.cpp",
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/States.cpp"
+			]
+		},
+		{
+			"expression" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/*.cpp",
+			"listDirectories" : true,
+			"paths" : 
+			[
+				"/Users/emmyjw/CookingTimerPro/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/OnLoad.cpp"
+			]
+		}
+	],
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/x86_64/CMakeFiles/3.31.0-g356e6de/CMakeSystem.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/android.toolchain.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/android-legacy.toolchain.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/abis.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/platforms.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Android-Initialize.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/hooks/pre/Android-Initialize.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Linux-Initialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/x86_64/CMakeFiles/3.31.0-g356e6de/CMakeCCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/x86_64/CMakeFiles/3.31.0-g356e6de/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Android.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/hooks/pre/Android.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Linux.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/UnixPaths.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Compiler/Clang-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Compiler/Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Android-Clang-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Android-Clang.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/hooks/pre/Android-Clang.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/ndk/27.1.12297006/build/cmake/flags.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Internal/CMakeCLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Linker/LLD-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Linker/LLD.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Linker/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Compiler/Clang-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Compiler/Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Android-Clang-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Platform/Android-Clang.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Internal/CMakeCXXLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Linker/LLD-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/Linker/LLD.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native/ReactAndroid/cmake-utils/folly-flags.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native/ReactCommon/cmake-utils/react-native-flags.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CheckIPOSupported.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CheckIPOSupported/CMakeLists-CXX.txt.in"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CheckIPOSupported/foo.cpp"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CheckIPOSupported/main.cpp"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CheckIPOSupported/CMakeLists-C.txt.in"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CheckIPOSupported/foo.c"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/Library/Android/sdk/cmake/3.31.0/share/cmake-3.31/Modules/CheckIPOSupported/main.c"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/prefab/x86_64/prefab/lib/x86_64-linux-android/cmake/ReactAndroid/ReactAndroidConfigVersion.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/prefab/x86_64/prefab/lib/x86_64-linux-android/cmake/ReactAndroid/ReactAndroidConfig.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/prefab/x86_64/prefab/lib/x86_64-linux-android/cmake/fbjni/fbjniConfigVersion.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/prefab/x86_64/prefab/lib/x86_64-linux-android/cmake/fbjni/fbjniConfig.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt"
+		},
+		{
+			"isExternal" : true,
+			"path" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/x86_64",
+		"source" : "/Users/emmyjw/CookingTimerPro/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 1
+	}
+}

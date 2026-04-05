@@ -1,0 +1,12 @@
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/CMakeFiles/appmodules.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/CMakeFiles/rebuild_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/AsyncStorageSpec_autolinked_build/CMakeFiles/react_codegen_AsyncStorageSpec.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/AsyncStorageSpec_autolinked_build/CMakeFiles/edit_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/AsyncStorageSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/safeareacontext_autolinked_build/CMakeFiles/edit_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/safeareacontext_autolinked_build/CMakeFiles/rebuild_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/rnscreens_autolinked_build/CMakeFiles/react_codegen_rnscreens.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/rnscreens_autolinked_build/CMakeFiles/edit_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/arm64-v8a/rnscreens_autolinked_build/CMakeFiles/rebuild_cache.dir

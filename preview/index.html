@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CookingTimerPro Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a2e; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; gap: 40px; }
+  h2 { color: #fff; font-size: 13px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; opacity: 0.5; margin-bottom: -30px; }
+
+  /* Phone shell */
+  .phone {
+    width: 390px;
+    background: #fff;
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
+    position: relative;
+  }
+  .notch {
+    height: 44px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .notch-pill {
+    width: 120px; height: 34px;
+    background: #000;
+    border-radius: 20px;
+  }
+  .screen { background: #F5F5F0; min-height: 780px; display: flex; flex-direction: column; }
+
+  /* Nav header */
+  .nav-header {
+    background: #fff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 0.5px solid #E5E5E0;
+  }
+  .nav-title { font-size: 17px; font-weight: 500; color: #1A1A1A; }
+  .nav-actions { display: flex; gap: 16px; align-items: center; }
+  .nav-btn { font-size: 24px; color: #085041; cursor: pointer; line-height: 1; font-weight: 400; }
+  .nav-btn-sm { font-size: 18px; color: #1A1A1A; }
+
+  /* Status bar */
+  .status-bar { padding: 10px 20px; }
+  .status-text { font-size: 13px; color: #6B6B68; }
+
+  /* Timer cards */
+  .card-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    border: 0.5px solid #E5E5E0;
+    padding: 16px;
+  }
+  .card-urgent { border: 1px solid #E24B4A; }
+  .card-complete { background: #FCEBEB; border: 2px solid #E24B4A; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; }
+  .card-name-row { display: flex; align-items: center; gap: 6px; flex: 1; }
+  .card-name { font-size: 15px; font-weight: 500; color: #1A1A1A; }
+  .card-pause { font-size: 13px; font-weight: 500; color: #085041; }
+  .card-note { font-size: 12px; color: #6B6B68; margin-top: 4px; }
+  .card-time { font-size: 28px; font-weight: 500; color: #1A1A1A; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .card-time-complete { font-size: 18px; color: #E24B4A; }
+  .progress-track { height: 4px; background: #F5F5F0; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; }
+  .card-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .btn-dismiss { flex: 1; padding: 10px; border-radius: 8px; border: 0.5px solid #E5E5E0; text-align: center; font-size: 14px; font-weight: 500; color: #1A1A1A; background: transparent; cursor: pointer; }
+  .btn-extend { flex: 1; padding: 10px; border-radius: 8px; background: #E1F5EE; text-align: center; font-size: 14px; font-weight: 500; color: #085041; cursor: pointer; }
+  .bell { font-size: 14px; }
+
+  /* Quick presets */
+  .presets-section { padding: 12px 16px; }
+  .presets-label { font-size: 12px; font-weight: 500; color: #9C9A92; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .presets-row { display: flex; gap: 8px; }
+  .preset-pill { flex: 1; background: #E1F5EE; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; }
+  .preset-pill-name { font-size: 13px; font-weight: 500; color: #085041; }
+  .preset-pill-time { font-size: 11px; color: #085041; opacity: 0.7; margin-top: 2px; }
+
+  /* Ad banner */
+  .ad-banner { height: 28px; background: #E0E0E0; display: flex; align-items: center; justify-content: center; }
+  .ad-text { font-size: 11px; color: #9C9A92; }
+
+  /* Add Timer screen */
+  .add-screen { background: #fff; flex: 1; padding: 0; }
+  .add-scroll { padding: 20px; }
+  .section-label { font-size: 12px; font-weight: 500; color: #9C9A92; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; margin-top: 20px; }
+  .section-label:first-child { margin-top: 0; }
+  .text-input {
+    border: 0.5px solid #E5E5E0; border-radius: 10px;
+    padding: 12px 14px; font-size: 15px; color: #1A1A1A; width: 100%;
+    font-family: inherit;
+  }
+  .text-input::placeholder { color: #9C9A92; }
+  .time-row { display: flex; align-items: center; justify-content: center; gap: 0; margin-top: 4px; }
+  .time-box { display: flex; flex-direction: column; align-items: center; width: 80px; }
+  .time-arrow { padding: 8px; font-size: 12px; color: #6B6B68; cursor: pointer; }
+  .time-value { font-size: 36px; font-weight: 500; color: #1A1A1A; font-variant-numeric: tabular-nums; }
+  .time-unit { font-size: 11px; color: #9C9A92; margin-top: 2px; }
+  .time-sep { font-size: 28px; color: #9C9A92; margin: 0 4px; padding-bottom: 20px; font-weight: 400; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .quick-pill {
+    padding: 8px 16px; border-radius: 20px; background: #F5F5F0;
+    border: 0.5px solid #E5E5E0; font-size: 13px; font-weight: 500; color: #1A1A1A; cursor: pointer;
+  }
+  .start-btn {
+    margin-top: 32px; background: #085041; border-radius: 12px;
+    padding: 16px; text-align: center; font-size: 16px; font-weight: 500; color: #fff; cursor: pointer;
+  }
+
+  /* Settings screen */
+  .settings-screen { background: #F5F5F0; flex: 1; padding: 16px; overflow-y: auto; }
+  .premium-card {
+    background: #EFF6FF; border-radius: 12px; border: 1.5px solid #3B82F6;
+    padding: 20px; margin-bottom: 20px;
+  }
+  .premium-title { font-size: 16px; font-weight: 500; color: #1A1A1A; }
+  .premium-price { font-size: 13px; color: #6B6B68; margin-top: 4px; }
+  .premium-features { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .premium-feature { font-size: 13px; color: #1A1A1A; }
+  .upgrade-btn {
+    margin-top: 16px; background: #3B82F6; border-radius: 8px;
+    padding: 12px; text-align: center; font-size: 14px; font-weight: 500; color: #fff; cursor: pointer;
+  }
+  .settings-list {
+    background: #fff; border-radius: 12px; border: 0.5px solid #E5E5E0; overflow: hidden;
+  }
+  .settings-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; border-bottom: 0.5px solid #E5E5E0;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-label { font-size: 15px; color: #1A1A1A; }
+  .settings-row-value { font-size: 14px; color: #6B6B68; }
+  .settings-chevron { font-size: 18px; color: #9C9A92; }
+  .toggle { width: 44px; height: 26px; background: #085041; border-radius: 13px; position: relative; cursor: pointer; }
+  .toggle-off { background: #E5E5E0; }
+  .toggle-knob { position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle-off .toggle-knob { right: auto; left: 3px; }
+  .version-text { font-size: 12px; color: #9C9A92; text-align: center; margin-top: 24px; }
+
+  /* Screen tabs */
+  .tabs { display: flex; gap: 2px; background: rgba(255,255,255,0.1); border-radius: 8px; padding: 3px; margin-bottom: 10px; }
+  .tab { flex: 1; text-align: center; padding: 6px; border-radius: 6px; font-size: 12px; color: rgba(255,255,255,0.5); cursor: pointer; font-weight: 500; }
+  .tab.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .screens-wrapper { width: 390px; }
+
+  /* Most Cooked */
+  .most-cooked-section { padding: 0 16px 10px; }
+  .most-cooked-list { background: #fff; border-radius: 12px; border: 0.5px solid #E5E5E0; overflow: hidden; }
+  .most-cooked-row { display: flex; align-items: center; padding: 11px 14px; border-bottom: 0.5px solid #E5E5E0; gap: 10px; }
+  .mc-medal { font-size: 16px; }
+  .mc-name { flex: 1; font-size: 14px; font-weight: 500; color: #1A1A1A; }
+  .mc-right { display: flex; align-items: center; gap: 8px; }
+  .mc-dur { font-size: 13px; font-weight: 500; color: #085041; }
+  .mc-count { font-size: 13px; color: #9C9A92; }
+
+  @keyframes pulse {
+    0%, 100% { border-color: #E24B4A; }
+    50% { border-color: rgba(226,75,74,0.3); }
+  }
+  .card-complete { animation: pulse 1.2s infinite; }
+</style>
+</head>
+<body>
+
+<div style="text-align:center; margin-bottom: 0;">
+  <div style="color:#fff; font-size:22px; font-weight:600; margin-bottom:6px;">CookingTimerPro</div>
+  <div style="color:rgba(255,255,255,0.4); font-size:13px;">Click tabs to switch screens</div>
+</div>
+
+<div class="screens-wrapper">
+  <div class="tabs" id="tabs">
+    <div class="tab active" onclick="showScreen('home')">Home</div>
+    <div class="tab" onclick="showScreen('add')">Add Timer</div>
+    <div class="tab" onclick="showScreen('settings')">Settings</div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div id="screen-home" class="phone">
+    <div class="notch"><div class="notch-pill"></div></div>
+    <div class="screen">
+      <div class="nav-header">
+        <div class="nav-title">CookingTimerPro</div>
+        <div class="nav-actions">
+          <div class="nav-btn">+</div>
+          <div class="nav-btn-sm">⚙</div>
+        </div>
+      </div>
+      <div class="status-bar">
+        <div class="status-text">3 active timers</div>
+      </div>
+      <div class="card-list">
+
+        <!-- Card 1: Healthy — coral, >50% remaining -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-name-row"><div class="card-name">Roasted Vegetables</div></div>
+            <div class="card-pause">Pause</div>
+          </div>
+          <div class="card-note">180C, flip halfway</div>
+          <div class="card-time">28:14</div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:75%; background:#D85A30;"></div>
+          </div>
+        </div>
+
+        <!-- Card 2: Warning — amber, 25-50% remaining -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-name-row"><div class="card-name">Pasta</div></div>
+            <div class="card-pause">Pause</div>
+          </div>
+          <div class="card-time">03:42</div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:37%; background:#BA7517;"></div>
+          </div>
+        </div>
+
+        <!-- Card 3: Urgent — red, <25% -->
+        <div class="card card-urgent">
+          <div class="card-header">
+            <div class="card-name-row"><div class="card-name">Soft Boiled Eggs</div></div>
+            <div class="card-pause">Pause</div>
+          </div>
+          <div class="card-note">6 min for runny yolk</div>
+          <div class="card-time">00:48</div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:11%; background:#E24B4A;"></div>
+          </div>
+        </div>
+
+        <!-- Card 4: Complete -->
+        <div class="card card-complete">
+          <div class="card-header">
+            <div class="card-name-row">
+              <span class="bell">🔔</span>
+              <div class="card-name">Rice</div>
+            </div>
+          </div>
+          <div class="card-time card-time-complete">Time's up!</div>
+          <div class="card-actions">
+            <div class="btn-dismiss">Dismiss</div>
+            <div class="btn-extend">+5 min</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Most Cooked -->
+      <div class="most-cooked-section">
+        <div class="presets-label">Most cooked</div>
+        <div class="most-cooked-list">
+          <div class="most-cooked-row">
+            <span class="mc-medal">🥇</span>
+            <span class="mc-name">Roasted Vegetables</span>
+            <span class="mc-right"><span class="mc-dur">45m</span><span class="mc-count">14×</span></span>
+          </div>
+          <div class="most-cooked-row">
+            <span class="mc-medal">🥈</span>
+            <span class="mc-name">Pasta</span>
+            <span class="mc-right"><span class="mc-dur">8m</span><span class="mc-count">11×</span></span>
+          </div>
+          <div class="most-cooked-row">
+            <span class="mc-medal">🥉</span>
+            <span class="mc-name">Soft Boiled Eggs</span>
+            <span class="mc-right"><span class="mc-dur">6m</span><span class="mc-count">9×</span></span>
+          </div>
+          <div class="most-cooked-row" style="border-bottom:none;">
+            <span class="mc-medal">🍳</span>
+            <span class="mc-name">Rice</span>
+            <span class="mc-right"><span class="mc-dur">15m</span><span class="mc-count">6×</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="presets-section">
+        <div class="presets-label">Quick start</div>
+        <div class="presets-row">
+          <div class="preset-pill"><div class="preset-pill-name">Pasta</div><div class="preset-pill-time">10m</div></div>
+          <div class="preset-pill"><div class="preset-pill-name">Eggs</div><div class="preset-pill-time">7m</div></div>
+          <div class="preset-pill"><div class="preset-pill-name">Rice</div><div class="preset-pill-time">15m</div></div>
+          <div class="preset-pill"><div class="preset-pill-name">Tea</div><div class="preset-pill-time">4m</div></div>
+        </div>
+      </div>
+
+      <div class="ad-banner"><div class="ad-text">Ad</div></div>
+    </div>
+  </div>
+
+  <!-- ADD TIMER SCREEN -->
+  <div id="screen-add" class="phone" style="display:none;">
+    <div class="notch"><div class="notch-pill"></div></div>
+    <div class="screen" style="background:#fff;">
+      <div class="nav-header">
+        <div style="font-size:17px; color:#085041;">‹</div>
+        <div class="nav-title">New Timer</div>
+        <div style="width:20px;"></div>
+      </div>
+      <div class="add-scroll">
+        <div class="section-label">Timer name</div>
+        <input class="text-input" type="text" placeholder="e.g. Roasted vegetables" value="Chicken Thighs">
+
+        <div class="section-label">Note (optional)</div>
+        <input class="text-input" type="text" placeholder="e.g. 180C, flip halfway..." value="200C fan, baste at halfway">
+
+        <div class="section-label">Set time</div>
+        <div class="time-row">
+          <div class="time-box">
+            <div class="time-arrow">▲</div>
+            <div class="time-value">00</div>
+            <div class="time-unit">hrs</div>
+            <div class="time-arrow">▼</div>
+          </div>
+          <div class="time-sep">:</div>
+          <div class="time-box">
+            <div class="time-arrow">▲</div>
+            <div class="time-value">35</div>
+            <div class="time-unit">min</div>
+            <div class="time-arrow">▼</div>
+          </div>
+          <div class="time-sep">:</div>
+          <div class="time-box">
+            <div class="time-arrow">▲</div>
+            <div class="time-value">00</div>
+            <div class="time-unit">sec</div>
+            <div class="time-arrow">▼</div>
+          </div>
+        </div>
+
+        <div class="section-label">Quick set</div>
+        <div class="pill-row">
+          <div class="quick-pill">5 min</div>
+          <div class="quick-pill">10 min</div>
+          <div class="quick-pill" style="background:#E1F5EE; border-color:#085041; color:#085041;">15 min</div>
+          <div class="quick-pill">20 min</div>
+          <div class="quick-pill">30 min</div>
+          <div class="quick-pill">1 hr</div>
+        </div>
+
+        <div class="start-btn">Start timer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div id="screen-settings" class="phone" style="display:none;">
+    <div class="notch"><div class="notch-pill"></div></div>
+    <div class="screen">
+      <div class="nav-header">
+        <div style="font-size:17px; color:#085041;">‹</div>
+        <div class="nav-title">Settings</div>
+        <div style="width:20px;"></div>
+      </div>
+      <div class="settings-screen">
+        <div class="premium-card">
+          <div class="premium-title">CookingTimerPro Premium</div>
+          <div class="premium-price">$2.99 one-time purchase</div>
+          <div class="premium-features">
+            <div class="premium-feature">✓ Unlimited simultaneous timers</div>
+            <div class="premium-feature">✓ No ads</div>
+            <div class="premium-feature">✓ Timer groups</div>
+            <div class="premium-feature">✓ Custom presets & sounds</div>
+          </div>
+          <div class="upgrade-btn">Upgrade</div>
+        </div>
+
+        <div class="settings-list">
+          <div class="settings-row">
+            <div class="settings-row-label">Alert sound</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="settings-row-value">Default</div>
+              <div class="settings-chevron">›</div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-label">Vibration</div>
+            <div class="toggle"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-label">Keep screen on</div>
+            <div class="toggle toggle-off"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-label">Dark mode</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="settings-row-value">System</div>
+              <div class="settings-chevron">›</div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-label">Manage presets</div>
+            <div class="settings-chevron">›</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-label">Rate the app</div>
+            <div class="settings-chevron">›</div>
+          </div>
+        </div>
+
+        <div class="version-text">CookingTimerPro v1.0.0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showScreen(name) {
+  ['home','add','settings'].forEach(s => {
+    document.getElementById('screen-' + s).style.display = s === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['home','add','settings'][i] === name);
+  });
+}
+</script>
+
+</body>
+</html>

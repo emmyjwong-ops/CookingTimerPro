@@ -1,0 +1,4 @@
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/armeabi-v7a/CMakeFiles/_CMakeLTOTest-C/bin/CMakeFiles/foo.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/armeabi-v7a/CMakeFiles/_CMakeLTOTest-C/bin/CMakeFiles/boo.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/armeabi-v7a/CMakeFiles/_CMakeLTOTest-C/bin/CMakeFiles/edit_cache.dir
+/Users/emmyjw/CookingTimerPro/android/app/.cxx/RelWithDebInfo/1f1g586h/armeabi-v7a/CMakeFiles/_CMakeLTOTest-C/bin/CMakeFiles/rebuild_cache.dir
