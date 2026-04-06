@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
@@ -43,5 +44,21 @@
           android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
           android:value="Cooking timer countdown and alarm" />
       </service>
+
+      <!-- Native alarm sound service — plays looping alarm independent of JS thread.
+           mediaPlayback type is required on API 34+ for audio foreground services. -->
+      <service
+        android:name=".AlarmSoundService"
+        android:exported="false"
+        android:foregroundServiceType="mediaPlayback" />
+
+      <!-- Receives the exact AlarmManager broadcast when a timer expires. -->
+      <receiver
+        android:name=".AlarmSoundReceiver"
+        android:exported="false">
+        <intent-filter>
+          <action android:name="com.cookingtimerpro.ACTION_PLAY_ALARM" />
+        </intent-filter>
+      </receiver>
     </application>
 </manifest>

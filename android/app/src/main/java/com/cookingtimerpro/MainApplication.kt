@@ -17,6 +17,7 @@ class MainApplication : Application(), ReactApplication {
           add(SoundPackage())
           add(BillingPackage())
           add(PermissionsPackage())
+          add(AlarmSchedulerPackage())
         },
     )
   }

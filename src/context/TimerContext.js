@@ -14,8 +14,8 @@ import {
   cancelTriggerNotification,
   updateServiceNotification,
   stopServiceNotification,
-  playCompletionSound,
-  stopCompletionSound,
+  scheduleNativeAlarm,
+  cancelNativeAlarm,
 } from '../utils/notifications';
 import {useSettings} from './SettingsContext';
 import {MAX_FREE_TIMERS} from '../constants/presets';
@@ -134,13 +134,12 @@ export function TimerProvider({children}) {
         }),
       );
 
-      if (completing.length > 0) {
-        playCompletionSound(getSoundFile(settings.alertSound), settings.vibration);
-      }
+      // Sound is now played by the native AlarmSoundService (scheduled via
+      // AlarmSchedulerModule) — no JS call needed here.
     }, 500);
 
     return () => clearInterval(interval);
-  }, [settings.alertSound, settings.vibration]);
+  }, []);
 
   const addTimer = useCallback(
     (name, note, totalSeconds) => {
@@ -175,6 +174,9 @@ export function TimerProvider({children}) {
           endTime,
           settings.vibration,
         );
+        // Native alarm fires AlarmSoundReceiver at endTime — works even when
+        // the screen is off or the JS thread is throttled.
+        scheduleNativeAlarm(newTimer.id, endTime, getSoundFile(settings.alertSound));
         setTimers(prev => [newTimer, ...prev]);
         return {error: null, timer: newTimer};
       } finally {
@@ -193,7 +195,7 @@ export function TimerProvider({children}) {
         .catch(() => {});
     }
     cancelTriggerNotification(id);
-    stopCompletionSound();
+    cancelNativeAlarm(id); // stops AlarmSoundService if playing
     setTimers(prev => prev.filter(t => t.id !== id));
   }, []);
 
@@ -201,7 +203,9 @@ export function TimerProvider({children}) {
     (id, name, note, totalSeconds) => {
       const endTime = Date.now() + totalSeconds * 1000;
       cancelTriggerNotification(id);
+      cancelNativeAlarm(id);
       scheduleTriggerNotification(id, name, note, endTime, settings.vibration);
+      scheduleNativeAlarm(id, endTime, getSoundFile(settings.alertSound));
       setTimers(prev =>
         prev.map(t =>
           t.id === id
@@ -226,7 +230,7 @@ export function TimerProvider({children}) {
   // timersRef.current.remainingSeconds (could be up to 499ms old).
   const extendTimer = useCallback(
     (id, extraSeconds) => {
-      stopCompletionSound();
+      cancelNativeAlarm(id); // stop any playing alarm sound
       const timer = timersRef.current.find(t => t.id === id);
       if (!timer) {
         return;
@@ -246,6 +250,7 @@ export function TimerProvider({children}) {
         newEndTime,
         settings.vibration,
       );
+      scheduleNativeAlarm(id, newEndTime, getSoundFile(settings.alertSound));
       setTimers(prev =>
         prev.map(t =>
           t.id === id
@@ -261,7 +266,7 @@ export function TimerProvider({children}) {
         ),
       );
     },
-    [settings.vibration],
+    [settings.vibration, settings.alertSound],
   );
 
   // FIX: notification side effects moved OUTSIDE setTimers updater.
@@ -276,6 +281,7 @@ export function TimerProvider({children}) {
       if (timer.isRunning) {
         // Pausing: cancel alarm and freeze state
         cancelTriggerNotification(id);
+        cancelNativeAlarm(id);
         stopServiceNotification();
         setTimers(prev =>
           prev.map(t =>
@@ -292,6 +298,7 @@ export function TimerProvider({children}) {
           newEndTime,
           settings.vibration,
         );
+        scheduleNativeAlarm(id, newEndTime, getSoundFile(settings.alertSound));
         setTimers(prev =>
           prev.map(t =>
             t.id === id ? {...t, isRunning: true, endTime: newEndTime} : t,
@@ -299,7 +306,7 @@ export function TimerProvider({children}) {
         );
       }
     },
-    [settings.vibration],
+    [settings.vibration, settings.alertSound],
   );
 
   const activeTimerCount = timers.filter(

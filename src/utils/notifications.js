@@ -132,7 +132,19 @@ export function playCompletionSound(soundFile = 'bell', vibrationEnabled = true)
   }
 }
 
-// Stops the looping bell sound.
+// Stops the looping bell sound (used by SettingsScreen preview).
 export function stopCompletionSound() {
   NativeModules.SoundModule?.stopBell();
+}
+
+// Schedule a native AlarmManager alarm that fires AlarmSoundReceiver at endTime.
+// This is the only reliable way to play a looping alarm when the screen is off —
+// it runs entirely in native Kotlin, no JS thread required.
+export function scheduleNativeAlarm(timerId, endTime, soundFile) {
+  NativeModules.AlarmSchedulerModule?.scheduleAlarm(timerId, endTime, soundFile || 'bell');
+}
+
+// Cancel the native alarm and stop AlarmSoundService if it is currently playing.
+export function cancelNativeAlarm(timerId) {
+  NativeModules.AlarmSchedulerModule?.cancelAlarm(timerId);
 }
