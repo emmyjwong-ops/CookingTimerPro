@@ -167,16 +167,11 @@ export function TimerProvider({children}) {
           isComplete: false,
           createdAt: Date.now(),
         };
-        scheduleTriggerNotification(
-          newTimer.id,
-          name,
-          note,
-          endTime,
-          settings.vibration,
-        );
+        scheduleTriggerNotification(newTimer.id, name, note, endTime);
         // Native alarm fires AlarmSoundReceiver at endTime — works even when
-        // the screen is off or the JS thread is throttled.
-        scheduleNativeAlarm(newTimer.id, endTime, getSoundFile(settings.alertSound));
+        // the screen is off or the JS thread is throttled. vibration is passed
+        // to AlarmSoundService which handles it natively (Vibrator API).
+        scheduleNativeAlarm(newTimer.id, endTime, getSoundFile(settings.alertSound), settings.vibration);
         setTimers(prev => [newTimer, ...prev]);
         return {error: null, timer: newTimer};
       } finally {
@@ -204,8 +199,8 @@ export function TimerProvider({children}) {
       const endTime = Date.now() + totalSeconds * 1000;
       cancelTriggerNotification(id);
       cancelNativeAlarm(id);
-      scheduleTriggerNotification(id, name, note, endTime, settings.vibration);
-      scheduleNativeAlarm(id, endTime, getSoundFile(settings.alertSound));
+      scheduleTriggerNotification(id, name, note, endTime);
+      scheduleNativeAlarm(id, endTime, getSoundFile(settings.alertSound), settings.vibration);
       setTimers(prev =>
         prev.map(t =>
           t.id === id
@@ -243,14 +238,8 @@ export function TimerProvider({children}) {
       const newRemaining = freshRemaining + extraSeconds;
       const newEndTime = now + newRemaining * 1000;
       cancelTriggerNotification(id);
-      scheduleTriggerNotification(
-        id,
-        timer.name,
-        timer.note,
-        newEndTime,
-        settings.vibration,
-      );
-      scheduleNativeAlarm(id, newEndTime, getSoundFile(settings.alertSound));
+      scheduleTriggerNotification(id, timer.name, timer.note, newEndTime);
+      scheduleNativeAlarm(id, newEndTime, getSoundFile(settings.alertSound), settings.vibration);
       setTimers(prev =>
         prev.map(t =>
           t.id === id
@@ -291,14 +280,8 @@ export function TimerProvider({children}) {
       } else {
         // Resuming: schedule new alarm from current remaining
         const newEndTime = Date.now() + timer.remainingSeconds * 1000;
-        scheduleTriggerNotification(
-          id,
-          timer.name,
-          timer.note,
-          newEndTime,
-          settings.vibration,
-        );
-        scheduleNativeAlarm(id, newEndTime, getSoundFile(settings.alertSound));
+        scheduleTriggerNotification(id, timer.name, timer.note, newEndTime);
+        scheduleNativeAlarm(id, newEndTime, getSoundFile(settings.alertSound), settings.vibration);
         setTimers(prev =>
           prev.map(t =>
             t.id === id ? {...t, isRunning: true, endTime: newEndTime} : t,

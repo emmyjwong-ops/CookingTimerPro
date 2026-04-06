@@ -14,13 +14,15 @@ class AlarmSoundReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != AlarmSchedulerModule.ACTION_PLAY_ALARM) return
 
-        val timerId  = intent.getStringExtra("timerId")  ?: return
+        val timerId   = intent.getStringExtra("timerId")  ?: return
         val soundFile = intent.getStringExtra("soundFile") ?: "bell"
+        val vibrate   = intent.getBooleanExtra("vibrate", false)
 
         val serviceIntent = Intent(context, AlarmSoundService::class.java).apply {
             action = AlarmSoundService.ACTION_PLAY
             putExtra("timerId", timerId)
             putExtra("soundFile", soundFile)
+            putExtra("vibrate", vibrate)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent)

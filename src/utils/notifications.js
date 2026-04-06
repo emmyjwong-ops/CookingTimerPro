@@ -5,35 +5,25 @@ import notifee, {
   TriggerType,
 } from '@notifee/react-native';
 
-// Channel IDs — one with vibration, one without.
-// Android caches channel settings permanently, so we use separate channels
-// rather than trying to update vibration on an existing channel.
-const CHANNEL_SOUND_ONLY   = 'cooking-timer-sound-only';
-const CHANNEL_SOUND_VIBRATE = 'cooking-timer-sound-vibrate';
+// Single channel for completion notifications — no vibration at channel level.
+// Vibration is handled natively by AlarmSoundService (Vibrator API) to avoid
+// the Android channel-caching issue where vibration settings lock in permanently
+// after first app install and cannot be changed via createChannel().
+const CHANNEL_ALERT = 'cooking-timer-alert-v3';
 
 export async function configureNotifications() {
   await notifee.requestPermission();
 
   if (Platform.OS === 'android') {
-    // Sound only — no channel-level vibration
+    // Completion alert — sound only. Vibration is handled by AlarmSoundService
+    // natively so it is not subject to Android's permanent channel-setting cache.
     await notifee.createChannel({
-      id: CHANNEL_SOUND_ONLY,
-      name: 'Timer Complete (sound only)',
+      id: CHANNEL_ALERT,
+      name: 'Timer Complete',
       importance: AndroidImportance.HIGH,
       visibility: AndroidVisibility.PUBLIC,
       sound: 'bell',
       vibration: false,
-    });
-
-    // Sound + vibration
-    await notifee.createChannel({
-      id: CHANNEL_SOUND_VIBRATE,
-      name: 'Timer Complete (sound + vibration)',
-      importance: AndroidImportance.HIGH,
-      visibility: AndroidVisibility.PUBLIC,
-      sound: 'bell',
-      vibration: true,
-      vibrationPattern: [0, 500, 200, 500],
     });
 
     // Ongoing status bar notification — always silent
@@ -46,18 +36,15 @@ export async function configureNotifications() {
   }
 }
 
-// Schedule a completion notification via Android AlarmManager.
-// vibrationEnabled controls which channel is used — the channel itself
-// handles vibration so Android's system respects it correctly.
+// Schedule a completion notification via Notifee's AlarmManager trigger.
+// Vibration is NOT controlled here — it is handled natively by AlarmSoundService.
 export async function scheduleTriggerNotification(
   timerId,
   timerName,
   note,
   endTime,
-  vibrationEnabled = true,
 ) {
   const body = note ? `${timerName} is done! (${note})` : `${timerName} is done!`;
-  const channelId = vibrationEnabled ? CHANNEL_SOUND_VIBRATE : CHANNEL_SOUND_ONLY;
 
   await notifee.createTriggerNotification(
     {
@@ -65,7 +52,7 @@ export async function scheduleTriggerNotification(
       title: '⏰ Timer Complete',
       body,
       android: {
-        channelId,
+        channelId: CHANNEL_ALERT,
         importance: AndroidImportance.HIGH,
         visibility: AndroidVisibility.PUBLIC,
         pressAction: {id: 'default'},
@@ -140,8 +127,15 @@ export function stopCompletionSound() {
 // Schedule a native AlarmManager alarm that fires AlarmSoundReceiver at endTime.
 // This is the only reliable way to play a looping alarm when the screen is off —
 // it runs entirely in native Kotlin, no JS thread required.
-export function scheduleNativeAlarm(timerId, endTime, soundFile) {
-  NativeModules.AlarmSchedulerModule?.scheduleAlarm(timerId, endTime, soundFile || 'bell');
+// vibration controls whether AlarmSoundService vibrates — handled natively to
+// avoid Android's permanent notification channel vibration caching.
+export function scheduleNativeAlarm(timerId, endTime, soundFile, vibration) {
+  NativeModules.AlarmSchedulerModule?.scheduleAlarm(
+    timerId,
+    endTime,
+    soundFile || 'bell',
+    vibration === true,
+  );
 }
 
 // Cancel the native alarm and stop AlarmSoundService if it is currently playing.

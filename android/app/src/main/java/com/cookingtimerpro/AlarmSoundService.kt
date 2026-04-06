@@ -12,12 +12,19 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
 
 /**
- * Foreground service that plays the looping alarm sound when a timer expires.
- * Started by AlarmSoundReceiver — runs entirely without JS.
+ * Foreground service that plays the looping alarm sound (and optionally vibrates)
+ * when a timer expires. Started by AlarmSoundReceiver — runs entirely without JS.
  * Stopped by AlarmSchedulerModule.cancelAlarm() or when the app calls dismissTimer.
+ *
+ * Vibration is handled here natively (not via notification channel) to avoid the
+ * Android channel-caching issue where channel vibration settings are locked after
+ * first creation and cannot be changed.
  */
 class AlarmSoundService : Service() {
 
@@ -26,12 +33,22 @@ class AlarmSoundService : Service() {
         const val ACTION_STOP = "com.cookingtimerpro.ALARM_STOP"
         private const val NOTIFICATION_ID = 9001
         private const val CHANNEL_ID = "alarm_sound_service_channel"
+        // Repeating pattern: 0ms delay, 500ms on, 300ms off — loops until cancelled.
+        private val VIBRATION_PATTERN = longArrayOf(0, 500, 300)
     }
 
     private var player: MediaPlayer? = null
     private var audioFocusRequest: AudioFocusRequest? = null
     private val audioManager by lazy {
         getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    }
+    private val vibrator: Vibrator? by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -45,11 +62,15 @@ class AlarmSoundService : Service() {
         when (intent?.action) {
             ACTION_PLAY -> {
                 val soundFile = intent.getStringExtra("soundFile") ?: "bell"
+                val vibrate   = intent.getBooleanExtra("vibrate", false)
                 // Must call startForeground before doing any heavy work (Android 8+ requirement).
                 startForegroundWithNotification()
                 // If already playing (e.g. two timers complete simultaneously), don't restart.
                 if (player == null) {
                     playSound(soundFile)
+                }
+                if (vibrate) {
+                    startVibration()
                 }
             }
             ACTION_STOP -> {
@@ -74,7 +95,7 @@ class AlarmSoundService : Service() {
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
-            .setSilent(true) // Sound plays via MediaPlayer, not from this notification
+            .setSilent(true) // Sound and vibration handled natively, not via notification
             .build()
 
         startForeground(NOTIFICATION_ID, notification)
@@ -127,6 +148,24 @@ class AlarmSoundService : Service() {
         }
     }
 
+    private fun startVibration() {
+        try {
+            val v = vibrator ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(
+                    VibrationEffect.createWaveform(VIBRATION_PATTERN, /*repeat=*/0),
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                v.vibrate(VIBRATION_PATTERN, /*repeat=*/0)
+            }
+        } catch (_: Exception) {}
+    }
+
     private fun stopAlarm() {
         try {
             player?.let { if (it.isPlaying) it.stop(); it.release() }
@@ -142,6 +181,10 @@ class AlarmSoundService : Service() {
             }
         } catch (_: Exception) {}
         audioFocusRequest = null
+
+        try {
+            vibrator?.cancel()
+        } catch (_: Exception) {}
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -159,8 +202,8 @@ class AlarmSoundService : Service() {
                 "Alarm Sound",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                setSound(null, null) // Sound is handled by MediaPlayer with STREAM_ALARM
-                enableVibration(false)
+                setSound(null, null)  // Sound via MediaPlayer
+                enableVibration(false) // Vibration via Vibrator, not channel
             }
             (getSystemService(NotificationManager::class.java))
                 .createNotificationChannel(channel)

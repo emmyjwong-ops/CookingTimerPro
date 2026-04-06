@@ -22,11 +22,12 @@ class AlarmSchedulerModule(reactContext: ReactApplicationContext) :
         const val ACTION_PLAY_ALARM = "com.cookingtimerpro.ACTION_PLAY_ALARM"
     }
 
-    private fun buildPendingIntent(timerId: String, soundFile: String): PendingIntent {
+    private fun buildPendingIntent(timerId: String, soundFile: String, vibrate: Boolean): PendingIntent {
         val intent = Intent(reactApplicationContext, AlarmSoundReceiver::class.java).apply {
             action = ACTION_PLAY_ALARM
             putExtra("timerId", timerId)
             putExtra("soundFile", soundFile)
+            putExtra("vibrate", vibrate)
         }
         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -40,10 +41,10 @@ class AlarmSchedulerModule(reactContext: ReactApplicationContext) :
 
     /** Schedule an exact AlarmManager alarm that fires AlarmSoundReceiver at endTimeMs. */
     @ReactMethod
-    fun scheduleAlarm(timerId: String, endTimeMs: Double, soundFile: String) {
+    fun scheduleAlarm(timerId: String, endTimeMs: Double, soundFile: String, vibrate: Boolean) {
         val am = reactApplicationContext
             .getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pi = buildPendingIntent(timerId, soundFile)
+        val pi = buildPendingIntent(timerId, soundFile, vibrate)
         val triggerMs = endTimeMs.toLong()
         // setExactAndAllowWhileIdle fires even in Doze mode (screen off, low-power).
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
