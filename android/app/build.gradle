@@ -88,8 +88,8 @@ android {
         applicationId "com.cookingtimerpro"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 25
-        versionName "3.4"
+        versionCode 26
+        versionName "3.5"
         missingDimensionStrategy 'store', 'play'
     }
     signingConfigs {

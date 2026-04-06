@@ -11,12 +11,6 @@ import notifee, {
 const CHANNEL_SOUND_ONLY   = 'cooking-timer-sound-only';
 const CHANNEL_SOUND_VIBRATE = 'cooking-timer-sound-vibrate';
 
-function formatRemaining(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
 export async function configureNotifications() {
   await notifee.requestPermission();
 
@@ -97,18 +91,27 @@ export async function cancelTriggerNotification(timerId) {
   } catch (_) {}
 }
 
-// Updates the persistent notification in the status bar.
-export async function updateServiceNotification(timerName, remainingSeconds) {
+// Updates the persistent foreground-service notification in the status bar.
+// FIX: uses Android's native chronometer (showChronometer + chronometerDirection: 'down'
+// + timestamp = endTime) so the OS itself counts down without any JS involvement.
+// This eliminates the previous 1-second JS setInterval approach that froze
+// whenever Android throttled the JS thread in the background.
+export async function updateServiceNotification(timerName, endTime) {
   await notifee.displayNotification({
     id: 'timer-service',
-    title: 'Cooking Timer',
-    body: `${timerName} — ${formatRemaining(remainingSeconds)} remaining`,
+    title: timerName,
+    body: 'Tap to open',
     android: {
       channelId: 'cooking-timer-ongoing',
       importance: AndroidImportance.LOW,
       ongoing: true,
       asForegroundService: true,
       pressAction: {id: 'default'},
+      // Native OS chronometer — counts down from endTime without JS.
+      showChronometer: true,
+      chronometerDirection: 'down',
+      timestamp: endTime,
+      showTimestamp: true,
     },
   });
 }

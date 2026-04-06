@@ -28,6 +28,10 @@ export function TimerProvider({children}) {
   const [loaded, setLoaded] = useState(false);
   const timersRef = useRef(timers);
   const isAddingRef = useRef(false);
+  // Tracks the last notification key (name|endTime) so we only call
+  // displayNotification when the soonest timer actually changes — avoids
+  // spurious calls on every 500ms countdown tick.
+  const lastNotifKeyRef = useRef(null);
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -65,33 +69,40 @@ export function TimerProvider({children}) {
     }
   }, [timers, loaded]);
 
-  // Status-bar notification — dedicated 1-second interval reading directly
-  // from timersRef + fresh endTime to avoid batched-state lag.
-  // FIX: soonest timer is now selected by endTime (not stale remainingSeconds).
+  // FIX: Status-bar notification now uses Android's native OS chronometer
+  // (updateServiceNotification passes endTime, not remainingSeconds).
+  // The OS counts down smoothly even when the JS thread is throttled in
+  // the background — no JS setInterval required for the display update.
+  //
+  // We only call displayNotification when the soonest timer's identity
+  // (name or endTime) actually changes, so the 500ms countdown tick that
+  // updates remainingSeconds doesn't trigger a redundant API call.
   useEffect(() => {
     if (!loaded) {
       return;
     }
-    const notifInterval = setInterval(() => {
-      const now = Date.now();
-      const active = timersRef.current.filter(t => t.isRunning && !t.isComplete);
-      if (active.length > 0) {
-        // FIX: compare by absolute endTime for accurate selection.
-        const soonest = active.reduce((a, b) => {
-          const aEnd = a.endTime ?? Infinity;
-          const bEnd = b.endTime ?? Infinity;
-          return aEnd < bEnd ? a : b;
-        });
-        const remaining = soonest.endTime
-          ? Math.max(0, Math.floor((soonest.endTime - now) / 1000))
-          : soonest.remainingSeconds;
-        updateServiceNotification(soonest.name, remaining);
-      } else {
-        stopServiceNotification();
+    const active = timers.filter(t => t.isRunning && !t.isComplete);
+    if (active.length > 0) {
+      const soonest = active.reduce((a, b) =>
+        (a.endTime ?? Infinity) < (b.endTime ?? Infinity) ? a : b,
+      );
+      if (!soonest.endTime) {
+        return;
       }
-    }, 1000);
-    return () => clearInterval(notifInterval);
-  }, [loaded]);
+      const key = `${soonest.name}|${soonest.endTime}`;
+      if (lastNotifKeyRef.current === key) {
+        return; // Nothing changed — chronometer is already running correctly.
+      }
+      lastNotifKeyRef.current = key;
+      updateServiceNotification(soonest.name, soonest.endTime);
+    } else {
+      if (lastNotifKeyRef.current === null) {
+        return; // Already stopped.
+      }
+      lastNotifKeyRef.current = null;
+      stopServiceNotification();
+    }
+  }, [timers, loaded]);
 
   // Countdown tick — identifies completions BEFORE setTimers so sound is
   // never a side-effect inside a pure state updater.
