@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  NativeModules,
 } from 'react-native';
 // FIX: use SafeAreaView from react-native-safe-area-context instead of the
 // built-in one from react-native — the context-aware version gives correct
@@ -12,6 +13,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTheme} from '../hooks/useTheme';
 import {useTimers} from '../context/TimerContext';
+import {useSettings} from '../context/SettingsContext';
 import TimerCard from '../components/TimerCard';
 import QuickPresets from '../components/QuickPresets';
 import AdBanner from '../components/AdBanner';
@@ -19,7 +21,18 @@ import MostCooked from '../components/MostCooked';
 
 export default function HomeScreen({navigation}) {
   const {timers, activeTimerCount} = useTimers();
+  const {settings} = useSettings();
   const C = useTheme();
+
+  // Apply the "Keep screen on" setting via the native ScreenWakeModule.
+  // Runs whenever the setting changes so it stays in sync.
+  useEffect(() => {
+    if (settings.keepScreenOn) {
+      NativeModules.ScreenWakeModule?.enable();
+    } else {
+      NativeModules.ScreenWakeModule?.disable();
+    }
+  }, [settings.keepScreenOn]);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({

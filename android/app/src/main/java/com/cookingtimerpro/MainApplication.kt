@@ -18,6 +18,7 @@ class MainApplication : Application(), ReactApplication {
           add(BillingPackage())
           add(PermissionsPackage())
           add(AlarmSchedulerPackage())
+          add(ScreenWakePackage())
         },
     )
   }

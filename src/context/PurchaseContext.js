@@ -22,6 +22,7 @@ export function PurchaseProvider({children}) {
   // show "No purchase found" for intentional restore attempts, not for the
   // automatic billing:restored event that fires on every app launch.
   const userInitiatedRestore = useRef(false);
+  const restoreTimeoutRef = useRef(null);
 
   // Connect to Google Play Billing on mount and listen for events
   useEffect(() => {
@@ -97,12 +98,16 @@ export function PurchaseProvider({children}) {
       return;
     }
     userInitiatedRestore.current = true;
-    // FIX: safety timeout — if billing isn't connected yet when Restore is
-    // tapped, billing:restored may not fire until BillingModule.connect()
-    // completes internally. Without this, userInitiatedRestore stays true and
-    // the later automatic connect-triggered check shows a spurious dialog.
-    setTimeout(() => {
+    // FIX: clear any previous timeout before creating a new one — prevents
+    // double-tap from spawning two parallel timeouts that both clear the flag.
+    if (restoreTimeoutRef.current) {
+      clearTimeout(restoreTimeoutRef.current);
+    }
+    // Safety timeout: if billing:restored fires late (connect still in progress),
+    // reset the flag so it doesn't affect the next automatic restore check.
+    restoreTimeoutRef.current = setTimeout(() => {
       userInitiatedRestore.current = false;
+      restoreTimeoutRef.current = null;
     }, 15000);
     BillingModule.restorePurchases();
     Alert.alert('Restore', 'Checking your previous purchases…');

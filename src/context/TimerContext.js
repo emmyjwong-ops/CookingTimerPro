@@ -218,7 +218,7 @@ export function TimerProvider({children}) {
         ),
       );
     },
-    [settings.vibration],
+    [settings.vibration, settings.alertSound],
   );
 
   // FIX: compute fresh remaining from endTime instead of stale
