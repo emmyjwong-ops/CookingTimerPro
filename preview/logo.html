@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #F5F5F0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: -apple-system, sans-serif;
+      gap: 48px;
+      padding: 48px 24px;
+    }
+    .row { display: flex; gap: 40px; align-items: flex-end; flex-wrap: wrap; justify-content: center; }
+    .variant { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .label { font-size: 12px; color: #9C9A92; letter-spacing: 0.5px; text-transform: uppercase; }
+    .on-dark { background: #111; padding: 20px; border-radius: 16px; }
+
+    .export-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 640px;
+    }
+    .export-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #085041;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .export-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+    .export-btn {
+      background: #085041;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      transition: opacity 0.15s;
+    }
+    .export-btn:hover { opacity: 0.85; }
+    .export-btn .btn-name { font-weight: 600; }
+    .export-btn .btn-desc { font-size: 11px; opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+  <!-- Preview -->
+  <div class="row">
+
+    <!-- 512px -->
+    <div class="variant">
+      <svg id="svg-master" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="256" cy="256" r="256" fill="#085041"/>
+        <circle cx="256" cy="256" r="168" fill="#FFFFFF" opacity="0.96"/>
+        <g stroke="#085041" stroke-linecap="round" opacity="0.18">
+          <line x1="256" y1="100" x2="256" y2="116" stroke-width="5"/>
+          <line x1="339.3" y1="122.7" x2="331.5" y2="136.3" stroke-width="3"/>
+          <line x1="389.3" y1="172.7" x2="377.7" y2="180.5" stroke-width="3"/>
+          <line x1="412" y1="256" x2="396" y2="256" stroke-width="5"/>
+          <line x1="389.3" y1="339.3" x2="377.7" y2="331.5" stroke-width="3"/>
+          <line x1="339.3" y1="389.3" x2="331.5" y2="377.7" stroke-width="3"/>
+          <line x1="256" y1="412" x2="256" y2="396" stroke-width="5"/>
+          <line x1="172.7" y1="389.3" x2="180.5" y2="377.7" stroke-width="3"/>
+          <line x1="122.7" y1="339.3" x2="136.3" y2="331.5" stroke-width="3"/>
+          <line x1="100" y1="256" x2="116" y2="256" stroke-width="5"/>
+          <line x1="122.7" y1="172.7" x2="136.3" y2="180.5" stroke-width="3"/>
+          <line x1="172.7" y1="122.7" x2="180.5" y2="136.3" stroke-width="3"/>
+        </g>
+        <line x1="234" y1="269" x2="369" y2="191" stroke="#085041" stroke-width="6" stroke-linecap="round"/>
+        <line x1="275" y1="272" x2="179" y2="192" stroke="#085041" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="256" cy="256" r="14" fill="#085041"/>
+        <circle cx="256" cy="256" r="6" fill="#34C990"/>
+      </svg>
+      <span class="label">512px — Play Store</span>
+    </div>
+
+    <!-- 192px -->
+    <div class="variant">
+      <svg width="192" height="192" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="256" cy="256" r="256" fill="#085041"/>
+        <circle cx="256" cy="256" r="168" fill="#FFFFFF" opacity="0.96"/>
+        <g stroke="#085041" stroke-linecap="round" opacity="0.18">
+          <line x1="256" y1="100" x2="256" y2="116" stroke-width="5"/>
+          <line x1="412" y1="256" x2="396" y2="256" stroke-width="5"/>
+          <line x1="256" y1="412" x2="256" y2="396" stroke-width="5"/>
+          <line x1="100" y1="256" x2="116" y2="256" stroke-width="5"/>
+        </g>
+        <line x1="234" y1="269" x2="369" y2="191" stroke="#085041" stroke-width="6" stroke-linecap="round"/>
+        <line x1="275" y1="272" x2="179" y2="192" stroke="#085041" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="256" cy="256" r="14" fill="#085041"/>
+        <circle cx="256" cy="256" r="6" fill="#34C990"/>
+      </svg>
+      <span class="label">192px — xxxhdpi</span>
+    </div>
+
+    <!-- 96px -->
+    <div class="variant">
+      <svg width="96" height="96" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="256" cy="256" r="256" fill="#085041"/>
+        <circle cx="256" cy="256" r="168" fill="#FFFFFF" opacity="0.96"/>
+        <line x1="234" y1="269" x2="369" y2="191" stroke="#085041" stroke-width="6" stroke-linecap="round"/>
+        <line x1="275" y1="272" x2="179" y2="192" stroke="#085041" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="256" cy="256" r="14" fill="#085041"/>
+        <circle cx="256" cy="256" r="6" fill="#34C990"/>
+      </svg>
+      <span class="label">96px — xhdpi</span>
+    </div>
+
+    <!-- Android adaptive (rounded square) -->
+    <div class="variant">
+      <svg width="192" height="192" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius:22.5%">
+        <rect width="512" height="512" fill="#085041"/>
+        <circle cx="256" cy="256" r="168" fill="#FFFFFF" opacity="0.96"/>
+        <g stroke="#085041" stroke-linecap="round" opacity="0.15">
+          <line x1="256" y1="100" x2="256" y2="116" stroke-width="5"/>
+          <line x1="412" y1="256" x2="396" y2="256" stroke-width="5"/>
+          <line x1="256" y1="412" x2="256" y2="396" stroke-width="5"/>
+          <line x1="100" y1="256" x2="116" y2="256" stroke-width="5"/>
+        </g>
+        <line x1="234" y1="269" x2="369" y2="191" stroke="#085041" stroke-width="6" stroke-linecap="round"/>
+        <line x1="275" y1="272" x2="179" y2="192" stroke="#085041" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="256" cy="256" r="14" fill="#085041"/>
+        <circle cx="256" cy="256" r="6" fill="#34C990"/>
+      </svg>
+      <span class="label">Android adaptive</span>
+    </div>
+
+    <!-- On dark -->
+    <div class="variant">
+      <div class="on-dark">
+        <svg width="96" height="96" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="256" cy="256" r="256" fill="#085041"/>
+          <circle cx="256" cy="256" r="168" fill="#FFFFFF" opacity="0.96"/>
+          <line x1="234" y1="269" x2="369" y2="191" stroke="#085041" stroke-width="6" stroke-linecap="round"/>
+          <line x1="275" y1="272" x2="179" y2="192" stroke="#085041" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="256" cy="256" r="14" fill="#085041"/>
+          <circle cx="256" cy="256" r="6" fill="#34C990"/>
+        </svg>
+      </div>
+      <span class="label">Mörkt läge</span>
+    </div>
+
+  </div>
+
+  <!-- Export -->
+  <div class="export-section">
+    <div class="export-title">Exportera PNG</div>
+    <div class="export-grid">
+      <button class="export-btn" onclick="exportPng(512, 'ic_launcher_playstore')">
+        <span class="btn-name">512 × 512</span>
+        <span class="btn-desc">Play Store — high-res icon</span>
+      </button>
+      <button class="export-btn" onclick="exportPng(192, 'ic_launcher_xxxhdpi')">
+        <span class="btn-name">192 × 192</span>
+        <span class="btn-desc">mipmap-xxxhdpi</span>
+      </button>
+      <button class="export-btn" onclick="exportPng(144, 'ic_launcher_xxhdpi')">
+        <span class="btn-name">144 × 144</span>
+        <span class="btn-desc">mipmap-xxhdpi</span>
+      </button>
+      <button class="export-btn" onclick="exportPng(96, 'ic_launcher_xhdpi')">
+        <span class="btn-name">96 × 96</span>
+        <span class="btn-desc">mipmap-xhdpi</span>
+      </button>
+      <button class="export-btn" onclick="exportPng(72, 'ic_launcher_hdpi')">
+        <span class="btn-name">72 × 72</span>
+        <span class="btn-desc">mipmap-hdpi</span>
+      </button>
+      <button class="export-btn" onclick="exportPng(48, 'ic_launcher_mdpi')">
+        <span class="btn-name">48 × 48</span>
+        <span class="btn-desc">mipmap-mdpi</span>
+      </button>
+      <button class="export-btn" onclick="exportAllSizes()">
+        <span class="btn-name">Ladda ner alla</span>
+        <span class="btn-desc">Alla storlekar på en gång</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // The canonical SVG markup (512×512 viewBox, circle background)
+    const SVG_MARKUP = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <circle cx="256" cy="256" r="256" fill="#085041"/>
+  <circle cx="256" cy="256" r="168" fill="#FFFFFF" opacity="0.96"/>
+  <g stroke="#085041" stroke-linecap="round" opacity="0.18">
+    <line x1="256" y1="100" x2="256" y2="116" stroke-width="5"/>
+    <line x1="339.3" y1="122.7" x2="331.5" y2="136.3" stroke-width="3"/>
+    <line x1="389.3" y1="172.7" x2="377.7" y2="180.5" stroke-width="3"/>
+    <line x1="412" y1="256" x2="396" y2="256" stroke-width="5"/>
+    <line x1="389.3" y1="339.3" x2="377.7" y2="331.5" stroke-width="3"/>
+    <line x1="339.3" y1="389.3" x2="331.5" y2="377.7" stroke-width="3"/>
+    <line x1="256" y1="412" x2="256" y2="396" stroke-width="5"/>
+    <line x1="172.7" y1="389.3" x2="180.5" y2="377.7" stroke-width="3"/>
+    <line x1="122.7" y1="339.3" x2="136.3" y2="331.5" stroke-width="3"/>
+    <line x1="100" y1="256" x2="116" y2="256" stroke-width="5"/>
+    <line x1="122.7" y1="172.7" x2="136.3" y2="180.5" stroke-width="3"/>
+    <line x1="172.7" y1="122.7" x2="180.5" y2="136.3" stroke-width="3"/>
+  </g>
+  <line x1="234" y1="269" x2="369" y2="191" stroke="#085041" stroke-width="6" stroke-linecap="round"/>
+  <line x1="275" y1="272" x2="179" y2="192" stroke="#085041" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="14" fill="#085041"/>
+  <circle cx="256" cy="256" r="6" fill="#34C990"/>
+</svg>`;
+
+    function exportPng(size, filename) {
+      const blob = new Blob([SVG_MARKUP], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        const link = document.createElement('a');
+        link.download = filename + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      };
+      img.src = url;
+    }
+
+    async function exportAllSizes() {
+      const sizes = [
+        [512, 'ic_launcher_playstore'],
+        [192, 'ic_launcher_xxxhdpi'],
+        [144, 'ic_launcher_xxhdpi'],
+        [96,  'ic_launcher_xhdpi'],
+        [72,  'ic_launcher_hdpi'],
+        [48,  'ic_launcher_mdpi'],
+      ];
+      for (const [size, name] of sizes) {
+        exportPng(size, name);
+        await new Promise(r => setTimeout(r, 200));
+      }
+    }
+  </script>
+
+</body>
+</html>
