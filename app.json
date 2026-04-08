@@ -1,4 +1,7 @@
 {
   "name": "CookingTimerPro",
-  "displayName": "CookingTimerPro"
+  "displayName": "CookingTimerPro",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-6412968414688678~3607789317"
+  }
 }
