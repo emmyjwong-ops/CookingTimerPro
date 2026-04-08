@@ -71,9 +71,15 @@ class AlarmSchedulerModule(reactContext: ReactApplicationContext) :
             reactApplicationContext, timerId.hashCode(), cancelIntent, flags
         )?.let { am.cancel(it) }
 
-        // Send a stop command to AlarmSoundService (no-op if service is not running).
-        reactApplicationContext.stopService(
-            Intent(reactApplicationContext, AlarmSoundService::class.java)
-        )
+        // BUG 1 FIX: send a targeted ACTION_STOP intent carrying the timerId so
+        // AlarmSoundService only stops if *this* timer is the one currently playing.
+        // Previously we called stopService() which killed the service regardless of
+        // which timer was playing — cancelling a concurrent alarm while another
+        // timer's alarm was still sounding.
+        val stopIntent = Intent(reactApplicationContext, AlarmSoundService::class.java).apply {
+            action = AlarmSoundService.ACTION_STOP
+            putExtra("timerId", timerId)
+        }
+        reactApplicationContext.startService(stopIntent)
     }
 }

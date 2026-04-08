@@ -205,7 +205,10 @@ const TimerCard = React.memo(function TimerCard({timer, navigation}) {
   prev.timer.remainingSeconds === next.timer.remainingSeconds &&
   prev.timer.isComplete === next.timer.isComplete &&
   prev.timer.isRunning === next.timer.isRunning &&
-  prev.timer.name === next.timer.name,
+  prev.timer.name === next.timer.name &&
+  // BUG 5 FIX: note was missing from the comparator — changes to the note
+  // field were silently ignored and the card never re-rendered.
+  prev.timer.note === next.timer.note,
 );
 
 export default TimerCard;

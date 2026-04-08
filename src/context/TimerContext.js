@@ -47,6 +47,13 @@ export function TimerProvider({children}) {
         const restored = saved.map(t => {
           if (t.isRunning && !t.isComplete && t.endTime) {
             const remaining = Math.max(0, Math.floor((t.endTime - now) / 1000));
+            // BUG 11 FIX: if the timer expired while the app was closed the
+            // AlarmManager intent already fired, but cancel the pending intent
+            // anyway (guards against rare OS delays) and stop any sound that
+            // was left playing in AlarmSoundService before the app reopened.
+            if (remaining === 0) {
+              cancelNativeAlarm(t.id);
+            }
             return {
               ...t,
               remainingSeconds: remaining,
@@ -271,7 +278,15 @@ export function TimerProvider({children}) {
         // Pausing: cancel alarm and freeze state
         cancelTriggerNotification(id);
         cancelNativeAlarm(id);
-        stopServiceNotification();
+        // BUG 4 FIX: only stop the foreground service notification if no other
+        // timer is still running — stopping it unconditionally killed the
+        // notification for all concurrent active timers.
+        const otherRunning = timersRef.current.filter(
+          t => t.id !== id && t.isRunning && !t.isComplete,
+        );
+        if (otherRunning.length === 0) {
+          stopServiceNotification();
+        }
         setTimers(prev =>
           prev.map(t =>
             t.id === id ? {...t, isRunning: false, endTime: null} : t,

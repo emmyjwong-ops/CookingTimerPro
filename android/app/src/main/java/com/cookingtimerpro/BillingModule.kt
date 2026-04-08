@@ -44,15 +44,26 @@ class BillingModule(private val reactContext: ReactApplicationContext) :
             )
             .build()
 
-        billingClient!!.startConnection(object : BillingClientStateListener {
+        val listener = object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     queryProductDetails()
                     checkExistingPurchases()
                 }
             }
-            override fun onBillingServiceDisconnected() {}
-        })
+            // BUG 15 FIX: reconnect when Play Services drops the billing connection
+            // (e.g. Play Store update, low memory). Without this the billing client
+            // silently stays disconnected until the user restarts the app.
+            override fun onBillingServiceDisconnected() {
+                val self = this
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (billingClient?.isReady == false) {
+                        billingClient?.startConnection(self)
+                    }
+                }, 3000L)
+            }
+        }
+        billingClient!!.startConnection(listener)
     }
 
     // ── Product details (loads real price from Play Store) ───────────────────

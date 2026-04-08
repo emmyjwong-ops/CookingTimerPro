@@ -39,6 +39,9 @@ class AlarmSoundService : Service() {
 
     private var player: MediaPlayer? = null
     private var audioFocusRequest: AudioFocusRequest? = null
+    // BUG 1 FIX: track which timer is currently playing so stop requests for
+    // a *different* timer are ignored (prevents cancelling a concurrent alarm).
+    private var activeTimerId: String? = null
     private val audioManager by lazy {
         getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
@@ -59,10 +62,21 @@ class AlarmSoundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
+        // BUG 14 FIX: when the OS restarts this START_STICKY service after killing it,
+        // intent is null. We have no alarm to play — stop immediately instead of
+        // blocking in the foreground without calling startForeground (ANR on API 26+).
+        if (intent == null) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        when (intent.action) {
             ACTION_PLAY -> {
+                val timerId  = intent.getStringExtra("timerId")
                 val soundFile = intent.getStringExtra("soundFile") ?: "bell"
                 val vibrate   = intent.getBooleanExtra("vibrate", false)
+                // BUG 1 FIX: record which timer triggered this alarm so that a
+                // stop request for a *different* timer is ignored.
+                activeTimerId = timerId
                 // Must call startForeground before doing any heavy work (Android 8+ requirement).
                 startForegroundWithNotification()
                 // If already playing (e.g. two timers complete simultaneously), don't restart.
@@ -74,6 +88,13 @@ class AlarmSoundService : Service() {
                 }
             }
             ACTION_STOP -> {
+                // BUG 1 FIX: only honour the stop if it targets the currently
+                // playing timer (or is a broadcast stop with no specific ID).
+                val requestedId = intent.getStringExtra("timerId")
+                if (requestedId != null && requestedId != activeTimerId) {
+                    // This stop is for a different timer — ignore it.
+                    return START_STICKY
+                }
                 stopAlarm()
                 return START_NOT_STICKY
             }
@@ -102,13 +123,16 @@ class AlarmSoundService : Service() {
     }
 
     private fun playSound(soundFile: String) {
-        try {
-            val ctx = applicationContext
-            var resId = ctx.resources.getIdentifier(soundFile, "raw", ctx.packageName)
-            if (resId == 0) resId = ctx.resources.getIdentifier("bell", "raw", ctx.packageName)
-            if (resId == 0) return
+        val ctx = applicationContext
+        var resId = ctx.resources.getIdentifier(soundFile, "raw", ctx.packageName)
+        if (resId == 0) resId = ctx.resources.getIdentifier("bell", "raw", ctx.packageName)
+        if (resId == 0) return
 
-            val mp = MediaPlayer()
+        // BUG 8 FIX: create MediaPlayer *outside* the try block so we can
+        // release it in the catch if setup fails — previously any exception
+        // between `MediaPlayer()` and `player = mp` would leak the object.
+        val mp = MediaPlayer()
+        try {
             val audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -144,6 +168,8 @@ class AlarmSoundService : Service() {
             player = mp
             mp.start()
         } catch (_: Exception) {
+            // BUG 8 FIX: release mp so the OS audio decoder is freed even on error.
+            try { mp.release() } catch (_: Exception) {}
             player = null
         }
     }
