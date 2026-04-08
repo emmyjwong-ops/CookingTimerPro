@@ -1,24 +1,30 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import {useTheme} from '../hooks/useTheme';
+import {View, StyleSheet} from 'react-native';
+import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
 import {useSettings} from '../context/SettingsContext';
+
+const AD_UNIT_ID = __DEV__
+  ? TestIds.BANNER
+  : 'ca-app-pub-6412968414688678/2049061994';
 
 export default function AdBanner() {
   const {settings} = useSettings();
-  const C = useTheme();
 
   if (settings.isPremium) {
     return null;
   }
 
   return (
-    <View style={[styles.banner, {backgroundColor: C.adBannerBg}]}>
-      <Text style={[styles.text, {color: C.tertiaryText}]}>Ad</Text>
+    <View style={styles.container}>
+      <BannerAd
+        unitId={AD_UNIT_ID}
+        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        requestOptions={{requestNonPersonalizedAdsOnly: false}}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  banner: {height: 28, alignItems: 'center', justifyContent: 'center'},
-  text: {fontSize: 11},
+  container: {alignItems: 'center', width: '100%'},
 });
