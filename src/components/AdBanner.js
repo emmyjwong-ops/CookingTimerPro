@@ -7,7 +7,20 @@ const AD_UNIT_ID = __DEV__
   ? TestIds.BANNER
   : 'ca-app-pub-6412968414688678/2049061994';
 
-export default function AdBanner() {
+class AdErrorBoundary extends React.Component {
+  state = {hasError: false};
+  static getDerivedStateFromError() {
+    return {hasError: true};
+  }
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
+
+function AdBannerInner() {
   const {settings} = useSettings();
 
   if (settings.isPremium) {
@@ -22,6 +35,14 @@ export default function AdBanner() {
         requestOptions={{requestNonPersonalizedAdsOnly: false}}
       />
     </View>
+  );
+}
+
+export default function AdBanner() {
+  return (
+    <AdErrorBoundary>
+      <AdBannerInner />
+    </AdErrorBoundary>
   );
 }
 

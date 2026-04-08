@@ -75,6 +75,6 @@ class PermissionsModule(private val reactContext: ReactApplicationContext) :
     // Returns the device manufacturer in lowercase for OEM-specific handling.
     @ReactMethod
     fun getManufacturer(promise: Promise) {
-        promise.resolve(Build.MANUFACTURER.lowercase())
+        promise.resolve((Build.MANUFACTURER ?: "unknown").lowercase())
     }
 }

@@ -136,7 +136,7 @@ export function TimerProvider({children}) {
 
       // Sound is now played by the native AlarmSoundService (scheduled via
       // AlarmSchedulerModule) — no JS call needed here.
-    }, 500);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);

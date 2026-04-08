@@ -22,7 +22,7 @@ function formatTime(seconds) {
 }
 
 function getStatusColor(remainingSeconds, totalSeconds, C) {
-  if (remainingSeconds <= 0) {
+  if (remainingSeconds <= 0 || totalSeconds <= 0) {
     return C.red;
   }
   const pct = remainingSeconds / totalSeconds;
@@ -35,7 +35,7 @@ function getStatusColor(remainingSeconds, totalSeconds, C) {
   return C.coral;
 }
 
-export default function TimerCard({timer, navigation}) {
+const TimerCard = React.memo(function TimerCard({timer, navigation}) {
   const {dismissTimer, extendTimer, pauseTimer} = useTimers();
   const C = useTheme();
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -200,7 +200,15 @@ export default function TimerCard({timer, navigation}) {
       )}
     </View>
   );
-}
+}, (prev, next) =>
+  prev.timer.id === next.timer.id &&
+  prev.timer.remainingSeconds === next.timer.remainingSeconds &&
+  prev.timer.isComplete === next.timer.isComplete &&
+  prev.timer.isRunning === next.timer.isRunning &&
+  prev.timer.name === next.timer.name,
+);
+
+export default TimerCard;
 
 const styles = StyleSheet.create({
   card: {
