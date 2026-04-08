@@ -25,9 +25,7 @@ react {
 
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
-    // BUG 18 FIX: removed hardcoded nvm path — React Native CLI resolves node
-    // from PATH automatically; the explicit path broke CI and other machines.
-    // nodeExecutableAndArgs = ["/Users/emmyjw/.nvm/versions/node/v20.20.2/bin/node"]
+    nodeExecutableAndArgs = ["/Users/emmyjw/.nvm/versions/node/v20.20.2/bin/node"]
     //
     //   The command to run when bundling. By default is 'bundle'
     // bundleCommand = "ram-bundle"
@@ -124,6 +122,8 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation("com.android.billingclient:billing:7.1.1")
+    // AdMob — manually added because autolinking doesn't include it (missing CMakeLists.txt)
+    implementation project(':react-native-google-mobile-ads')
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
