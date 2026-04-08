@@ -39,13 +39,10 @@ export default function SettingsScreen({navigation}) {
   const soundPreviewTimeout = useRef(null);
 
   // Hidden dev toggle: tap version text 7 times to unlock/lock premium.
-  // BUG 10 FIX: guard with __DEV__ so this never runs in production builds.
+  // Works in both debug and release builds (intentional developer shortcut).
   const devTapCount = useRef(0);
   const devTapTimer = useRef(null);
   const handleVersionTap = () => {
-    if (!__DEV__) {
-      return;
-    }
     devTapCount.current += 1;
     if (devTapTimer.current) clearTimeout(devTapTimer.current);
     devTapTimer.current = setTimeout(() => { devTapCount.current = 0; }, 1500);
@@ -169,7 +166,7 @@ export default function SettingsScreen({navigation}) {
             <Switch
               value={settings.vibration}
               onValueChange={v => updateSetting('vibration', v)}
-              trackColor={{true: C.tealText}}
+              trackColor={{true: C.tealText, false: C.border}}
             />
           }
         />
@@ -180,7 +177,7 @@ export default function SettingsScreen({navigation}) {
             <Switch
               value={settings.keepScreenOn}
               onValueChange={v => updateSetting('keepScreenOn', v)}
-              trackColor={{true: C.tealText}}
+              trackColor={{true: C.tealText, false: C.border}}
             />
           }
         />

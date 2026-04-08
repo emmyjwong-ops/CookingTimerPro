@@ -62,9 +62,16 @@ class AlarmSoundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // BUG FIX: ALWAYS call startForeground first — before any when/return path.
+        // Android enforces a 5-second contract: if startForegroundService() was called
+        // to deliver this intent, we *must* call startForeground() before returning,
+        // even for a spurious ACTION_STOP that arrives while the service isn't
+        // actually playing. Failing this causes a ForegroundServiceDidNotStartInTimeException
+        // / ANR on API 26+.
+        startForegroundWithNotification()
+
         // BUG 14 FIX: when the OS restarts this START_STICKY service after killing it,
-        // intent is null. We have no alarm to play — stop immediately instead of
-        // blocking in the foreground without calling startForeground (ANR on API 26+).
+        // intent is null. We have no alarm to play — stop immediately.
         if (intent == null) {
             stopSelf()
             return START_NOT_STICKY
@@ -77,8 +84,6 @@ class AlarmSoundService : Service() {
                 // BUG 1 FIX: record which timer triggered this alarm so that a
                 // stop request for a *different* timer is ignored.
                 activeTimerId = timerId
-                // Must call startForeground before doing any heavy work (Android 8+ requirement).
-                startForegroundWithNotification()
                 // If already playing (e.g. two timers complete simultaneously), don't restart.
                 if (player == null) {
                     playSound(soundFile)
@@ -93,10 +98,23 @@ class AlarmSoundService : Service() {
                 val requestedId = intent.getStringExtra("timerId")
                 if (requestedId != null && requestedId != activeTimerId) {
                     // This stop is for a different timer — ignore it.
+                    // We still satisfied the fg contract above; now release ourselves
+                    // if nothing is actually playing so we don't leak a silent fg service.
+                    if (player == null && activeTimerId == null) {
+                        stopSelf()
+                        return START_NOT_STICKY
+                    }
                     return START_STICKY
                 }
                 stopAlarm()
                 return START_NOT_STICKY
+            }
+            else -> {
+                // Unknown / null action — release if nothing is playing.
+                if (player == null && activeTimerId == null) {
+                    stopSelf()
+                    return START_NOT_STICKY
+                }
             }
         }
         return START_STICKY
@@ -144,20 +162,37 @@ class AlarmSoundService : Service() {
                     .setAudioAttributes(audioAttributes)
                     .setAcceptsDelayedFocusGain(false)
                     .setOnAudioFocusChangeListener { change ->
-                        if (change == AudioManager.AUDIOFOCUS_LOSS ||
-                            change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-                            stopAlarm()
+                        when (change) {
+                            AudioManager.AUDIOFOCUS_LOSS -> stopAlarm()
+                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                                // Duck instead of stopping — a cooking alarm must stay
+                                // audible through short interruptions (notifications).
+                                try { player?.setVolume(0.3f, 0.3f) } catch (_: Exception) {}
+                            }
+                            AudioManager.AUDIOFOCUS_GAIN -> {
+                                try {
+                                    player?.setVolume(1.0f, 1.0f)
+                                    if (player?.isPlaying == false) player?.start()
+                                } catch (_: Exception) {}
+                            }
                         }
                     }
                     .build()
                 audioFocusRequest = focusReq
-                audioManager.requestAudioFocus(focusReq)
+                val result = audioManager.requestAudioFocus(focusReq)
+                if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    android.util.Log.w("AlarmSoundService", "Audio focus not granted; playing anyway")
+                }
             } else {
                 @Suppress("DEPRECATION")
-                audioManager.requestAudioFocus(
+                val result = audioManager.requestAudioFocus(
                     null, AudioManager.STREAM_ALARM,
                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
                 )
+                if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    android.util.Log.w("AlarmSoundService", "Audio focus not granted; playing anyway")
+                }
             }
 
             val afd = ctx.resources.openRawResourceFd(resId) ?: run { mp.release(); return }

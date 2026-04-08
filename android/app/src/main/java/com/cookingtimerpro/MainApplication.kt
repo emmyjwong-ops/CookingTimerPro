@@ -20,8 +20,6 @@ class MainApplication : Application(), ReactApplication {
           add(PermissionsPackage())
           add(AlarmSchedulerPackage())
           add(ScreenWakePackage())
-          // AdMob: registered manually — autolinking skips this library
-          // because its codegen CMakeLists.txt does not exist until after build.
           add(ReactNativeGoogleMobileAdsPackage())
         },
     )

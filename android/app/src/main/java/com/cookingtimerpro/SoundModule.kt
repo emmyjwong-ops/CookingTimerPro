@@ -57,16 +57,31 @@ class SoundModule(private val reactContext: ReactApplicationContext) :
                     .setAcceptsDelayedFocusGain(false)
                     .setOnAudioFocusChangeListener { focusChange ->
                         when (focusChange) {
-                            AudioManager.AUDIOFOCUS_LOSS,
-                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> stopPlayer()
+                            AudioManager.AUDIOFOCUS_LOSS -> stopPlayer()
+                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                                try { player?.setVolume(0.3f, 0.3f) } catch (_: Exception) {}
+                            }
+                            AudioManager.AUDIOFOCUS_GAIN -> {
+                                try {
+                                    player?.setVolume(1.0f, 1.0f)
+                                    if (player?.isPlaying == false) player?.start()
+                                } catch (_: Exception) {}
+                            }
                         }
                     }
                     .build()
                 audioFocusRequest = focusRequest
-                audioManager.requestAudioFocus(focusRequest)
+                val result = audioManager.requestAudioFocus(focusRequest)
+                if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    android.util.Log.w("SoundModule", "Audio focus not granted; playing anyway")
+                }
             } else {
                 @Suppress("DEPRECATION")
-                audioManager.requestAudioFocus(null, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                val result = audioManager.requestAudioFocus(null, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                    android.util.Log.w("SoundModule", "Audio focus not granted; playing anyway")
+                }
             }
 
             val afd = context.resources.openRawResourceFd(resId) ?: run {

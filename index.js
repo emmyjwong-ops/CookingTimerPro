@@ -6,12 +6,14 @@ import {AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 import notifee from '@notifee/react-native';
-import mobileAds from 'react-native-google-mobile-ads';
+import {initializeAdsWithConsent, loadSavedConsentFlag} from './src/utils/ads';
 
-// Initialize AdMob — must be called before any ads are shown.
-mobileAds()
-  .initialize()
-  .catch(() => {}); // Silently ignore if ads unavailable on this device
+// Initialize AdMob with GDPR/UMP consent — must be called before any ads are shown.
+// loadSavedConsentFlag() first sets the in-memory consent flag from a previous
+// session so AdBanner can render with the right settings immediately.
+loadSavedConsentFlag()
+  .then(() => initializeAdsWithConsent())
+  .catch(() => {});
 
 // Keeps the Notifee foreground service alive while timers are running.
 notifee.registerForegroundService(() => new Promise(() => {}));

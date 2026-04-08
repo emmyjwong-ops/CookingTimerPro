@@ -1,4 +1,4 @@
-import {Platform, Vibration, NativeModules} from 'react-native';
+import {Platform, NativeModules} from 'react-native';
 import notifee, {
   AndroidImportance,
   AndroidVisibility,
@@ -81,42 +81,49 @@ export async function cancelTriggerNotification(timerId) {
 // Updates the persistent foreground-service notification in the status bar.
 // FIX: uses Android's native chronometer (showChronometer + chronometerDirection: 'down'
 // + timestamp = endTime) so the OS itself counts down without any JS involvement.
-// This eliminates the previous 1-second JS setInterval approach that froze
-// whenever Android throttled the JS thread in the background.
-export async function updateServiceNotification(timerName, endTime) {
-  await notifee.displayNotification({
-    id: 'timer-service',
-    title: timerName,
-    body: 'Tap to open',
-    android: {
-      channelId: 'cooking-timer-ongoing',
-      importance: AndroidImportance.LOW,
-      ongoing: true,
-      asForegroundService: true,
-      pressAction: {id: 'default'},
-      // Native OS chronometer — counts down from endTime without JS.
-      showChronometer: true,
-      chronometerDirection: 'down',
-      timestamp: endTime,
-      showTimestamp: true,
-    },
-  });
+//
+// BUG 8 FIX: all service-notification updates are now serialized through a
+// promise chain ref so rapid consecutive displayNotification / stopForegroundService
+// calls don't race and leave the notifee foreground service in an inconsistent
+// state (e.g. "stop" arriving before its preceding "display" resolves).
+let serviceNotifQueue = Promise.resolve();
+
+function enqueueServiceNotif(fn) {
+  const next = serviceNotifQueue.then(fn, fn);
+  // Keep the chain alive but don't let a rejection break future calls.
+  serviceNotifQueue = next.catch(() => {});
+  return next;
+}
+
+export function updateServiceNotification(timerName, endTime) {
+  return enqueueServiceNotif(() =>
+    notifee.displayNotification({
+      id: 'timer-service',
+      title: timerName,
+      body: 'Tap to open',
+      android: {
+        channelId: 'cooking-timer-ongoing',
+        importance: AndroidImportance.LOW,
+        ongoing: true,
+        asForegroundService: true,
+        pressAction: {id: 'default'},
+        // Native OS chronometer — counts down from endTime without JS.
+        showChronometer: true,
+        chronometerDirection: 'down',
+        timestamp: endTime,
+        showTimestamp: true,
+      },
+    }),
+  );
 }
 
 // Stops the foreground service and removes the status-bar notification.
-export async function stopServiceNotification() {
-  try {
-    await notifee.stopForegroundService();
-  } catch (_) {}
-}
-
-// Plays the chosen alarm sound in foreground.
-// soundFile = filename in res/raw (without extension), e.g. "bell", "sound_soft_chime"
-export function playCompletionSound(soundFile = 'bell', vibrationEnabled = true) {
-  NativeModules.SoundModule?.playBell(soundFile);
-  if (vibrationEnabled) {
-    Vibration.vibrate([0, 500, 200, 500, 200, 500]);
-  }
+export function stopServiceNotification() {
+  return enqueueServiceNotif(async () => {
+    try {
+      await notifee.stopForegroundService();
+    } catch (_) {}
+  });
 }
 
 // Stops the looping bell sound (used by SettingsScreen preview).

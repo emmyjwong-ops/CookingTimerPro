@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useState, useEffect} from 'react';
+import React, {createContext, useContext, useState, useEffect, useCallback} from 'react';
 import {saveSettings, loadSettings, savePresets, loadPresets} from '../utils/storage';
 
 const SettingsContext = createContext();
@@ -34,14 +34,14 @@ export function SettingsProvider({children}) {
     }
   }, [settings, loaded]);
 
-  const updateSetting = (key, value) => {
+  const updateSetting = useCallback((key, value) => {
     setSettings(prev => ({...prev, [key]: value}));
-  };
+  }, []);
 
-  const updatePresets = presets => {
+  const updatePresets = useCallback(presets => {
     setCustomPresets(presets);
     savePresets(presets);
-  };
+  }, []);
 
   return (
     <SettingsContext.Provider

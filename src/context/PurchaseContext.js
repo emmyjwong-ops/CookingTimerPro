@@ -23,6 +23,13 @@ export function PurchaseProvider({children}) {
   // automatic billing:restored event that fires on every app launch.
   const userInitiatedRestore = useRef(false);
   const restoreTimeoutRef = useRef(null);
+  // Ref to current settings so the billing effect doesn't need `settings` as a
+  // dep (which would re-subscribe on every setting change and could flip the
+  // dev premium toggle back to true on the next billing:restored event).
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   // Connect to Google Play Billing on mount and listen for events
   useEffect(() => {
@@ -53,7 +60,12 @@ export function PurchaseProvider({children}) {
       // Only show the "no purchase" alert when the user explicitly tapped Restore.
       billingEmitter.addListener('billing:restored', ({owned}) => {
         if (owned) {
-          updateSetting('isPremium', true);
+          // Only set isPremium=true if it isn't already — prevents clobbering
+          // a developer/test toggle that was manually set, and avoids a
+          // redundant state update.
+          if (!settingsRef.current.isPremium) {
+            updateSetting('isPremium', true);
+          }
           if (userInitiatedRestore.current) {
             Alert.alert('✓ Restored', 'Premium has been restored successfully.');
           }

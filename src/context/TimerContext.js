@@ -164,7 +164,7 @@ export function TimerProvider({children}) {
         }
         const endTime = Date.now() + totalSeconds * 1000;
         const newTimer = {
-          id: Date.now().toString(),
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           name,
           note: note || '',
           totalSeconds,
@@ -185,7 +185,7 @@ export function TimerProvider({children}) {
         isAddingRef.current = false;
       }
     },
-    [settings.isPremium, settings.vibration],
+    [settings.isPremium, settings.vibration, settings.alertSound],
   );
 
   const dismissTimer = useCallback(id => {
