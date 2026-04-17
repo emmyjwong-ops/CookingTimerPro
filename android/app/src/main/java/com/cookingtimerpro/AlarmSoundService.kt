@@ -121,18 +121,28 @@ class AlarmSoundService : Service() {
     }
 
     private fun startForegroundWithNotification() {
-        val openIntent = packageManager.getLaunchIntentForPackage(packageName)
         val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         else
             PendingIntent.FLAG_UPDATE_CURRENT
-        val pendingIntent = PendingIntent.getActivity(this, 0, openIntent, pendingFlags)
+
+        // ONE-TAP DISMISS:
+        // Tapping the notification body OR the "Stop" action routes directly to
+        // this service with ACTION_STOP, which synchronously stops playback and
+        // removes the notification. No app launch, no extra dialog, no second tap.
+        val stopIntent = Intent(this, AlarmSoundService::class.java).apply {
+            action = ACTION_STOP
+            putExtra("timerId", activeTimerId)
+        }
+        val stopPI = PendingIntent.getService(this, 1001, stopIntent, pendingFlags)
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Timer complete! ⏰")
-            .setContentText("Tap to open CookingTimerPro")
+            .setContentText("Tap to stop the alarm")
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(stopPI)
+            .addAction(android.R.drawable.ic_media_pause, "Stop alarm", stopPI)
+            .setAutoCancel(true)
             .setOngoing(true)
             .setSilent(true) // Sound and vibration handled natively, not via notification
             .build()

@@ -57,6 +57,9 @@ export default function TimerGroupsScreen({navigation}) {
 
   const [groups, setGroups] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  // ISSUE 5 FIX: track whether the modal is editing an existing group (string id)
+  // or creating a new one (null). `saveGroup` branches on this.
+  const [editingId, setEditingId] = useState(null);
 
   // Form state
   const [groupName, setGroupName] = useState('');
@@ -77,12 +80,38 @@ export default function TimerGroupsScreen({navigation}) {
   // ── Modal helpers ──────────────────────────────────────────────────────────
 
   const openCreate = () => {
+    setEditingId(null);
     setGroupName('');
     setGroupTimers([]);
     setTimerName('');
     setTimerHours('');
     setTimerMinutes('');
     setModalVisible(true);
+  };
+
+  // ISSUE 5 FIX: open the modal in "edit" mode pre-filled with the existing
+  // group's data. Timers inside the group get a fresh in-progress id if they
+  // lack one (legacy groups saved before ids were added).
+  const openEdit = group => {
+    setEditingId(group.id);
+    setGroupName(group.name);
+    setGroupTimers(
+      group.timers.map(t => ({
+        id: t.id ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: t.name,
+        note: t.note ?? '',
+        seconds: t.seconds,
+      })),
+    );
+    setTimerName('');
+    setTimerHours('');
+    setTimerMinutes('');
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setEditingId(null);
   };
 
   const addTimerToGroup = () => {
@@ -114,9 +143,32 @@ export default function TimerGroupsScreen({navigation}) {
       Alert.alert('Add at least one timer', 'A group needs at least one timer.');
       return;
     }
-    const newGroup = {id: Date.now().toString(), name, timers: groupTimers};
-    persistGroups([newGroup, ...groups]);
-    setModalVisible(false);
+    if (editingId) {
+      // ISSUE 5 FIX: replace the edited group in place (preserve ordering).
+      persistGroups(
+        groups.map(g =>
+          g.id === editingId ? {...g, name, timers: groupTimers} : g,
+        ),
+      );
+    } else {
+      const newGroup = {id: Date.now().toString(), name, timers: groupTimers};
+      persistGroups([newGroup, ...groups]);
+    }
+    closeModal();
+  };
+
+  // ISSUE 5 FIX: long-press on a group card opens an action sheet with
+  // Edit / Remove / Cancel — matching the pattern used for individual timers.
+  const handleGroupLongPress = group => {
+    Alert.alert(group.name, 'What would you like to do?', [
+      {text: 'Edit', onPress: () => openEdit(group)},
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: () => deleteGroup(group.id),
+      },
+      {text: 'Cancel', style: 'cancel'},
+    ]);
   };
 
   // ── Group actions ──────────────────────────────────────────────────────────
@@ -186,11 +238,19 @@ export default function TimerGroupsScreen({navigation}) {
           </View>
         }
         renderItem={({item}) => (
-          <View style={[styles.card, {backgroundColor: C.primaryBg, borderColor: C.border}]}>
+          // ISSUE 5 FIX: long-press opens Edit/Remove/Cancel action sheet.
+          // Regular press does nothing (Start has its own button).
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onLongPress={() => handleGroupLongPress(item)}
+            delayLongPress={400}
+            style={[styles.card, {backgroundColor: C.primaryBg, borderColor: C.border}]}>
             <View style={styles.cardHeader}>
               <Text style={[styles.cardName, {color: C.primaryText}]}>{item.name}</Text>
-              <TouchableOpacity onPress={() => deleteGroup(item.id)} hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-                <Text style={styles.cardDelete}>✕</Text>
+              <TouchableOpacity
+                onPress={() => openEdit(item)}
+                hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
+                <Text style={[styles.cardEdit, {color: C.tealText}]}>Edit</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.timerList}>
@@ -208,7 +268,10 @@ export default function TimerGroupsScreen({navigation}) {
               activeOpacity={0.8}>
               <Text style={styles.startBtnText}>▶  Start all timers</Text>
             </TouchableOpacity>
-          </View>
+            <Text style={[styles.longPressHint, {color: C.tertiaryText}]}>
+              Long-press for more options
+            </Text>
+          </TouchableOpacity>
         )}
       />
 
@@ -225,18 +288,20 @@ export default function TimerGroupsScreen({navigation}) {
         visible={modalVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => setModalVisible(false)}>
+        onRequestClose={closeModal}>
         <KeyboardAvoidingView
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
-            onPress={() => setModalVisible(false)}
+            onPress={closeModal}
           />
           <View style={[styles.modalSheet, {backgroundColor: C.primaryBg, borderColor: C.border}]}>
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-              <Text style={[styles.modalTitle, {color: C.primaryText}]}>New Group</Text>
+              <Text style={[styles.modalTitle, {color: C.primaryText}]}>
+                {editingId ? 'Edit Group' : 'New Group'}
+              </Text>
 
               {/* Group name */}
               <Text style={[styles.fieldLabel, {color: C.secondaryText}]}>Group name</Text>
@@ -313,13 +378,15 @@ export default function TimerGroupsScreen({navigation}) {
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={[styles.cancelBtn, {borderColor: C.border}]}
-                  onPress={() => setModalVisible(false)}>
+                  onPress={closeModal}>
                   <Text style={[styles.cancelBtnText, {color: C.secondaryText}]}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.saveBtn, {backgroundColor: C.tealText}]}
                   onPress={saveGroup}>
-                  <Text style={styles.saveBtnText}>Save group</Text>
+                  <Text style={styles.saveBtnText}>
+                    {editingId ? 'Save changes' : 'Save group'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -367,6 +434,8 @@ const styles = StyleSheet.create({
   },
   cardName: {fontSize: 16, fontWeight: '600'},
   cardDelete: {fontSize: 15, color: '#EF4444'},
+  cardEdit: {fontSize: 14, fontWeight: '500'},
+  longPressHint: {fontSize: 11, textAlign: 'center', marginTop: 8, fontStyle: 'italic'},
   timerList: {marginBottom: 14, gap: 4},
   timerLine: {fontSize: 13},
   startBtn: {

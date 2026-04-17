@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   NativeModules,
+  Image,
+  Platform,
 } from 'react-native';
 // FIX: use SafeAreaView from react-native-safe-area-context instead of the
 // built-in one from react-native — the context-aware version gives correct
@@ -39,19 +41,24 @@ export default function HomeScreen({navigation}) {
       headerStyle: {backgroundColor: C.primaryBg},
       headerTintColor: C.primaryText,
       headerRight: () => (
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('AddTimer')}
-            hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-            <Text style={[styles.addBtn, {color: C.tealText}]}>+</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Settings')}
-            style={{marginLeft: 16}}
-            hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-            <Text style={styles.gearBtn}>{'⚙'}</Text>
-          </TouchableOpacity>
-        </View>
+        // The header "+" was removed in v4.5.2 — the big bottom-right FAB is
+        // now the single, obvious entry point for adding a timer. The gear
+        // remains as the only header button.
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Settings')}
+          accessibilityLabel="Settings"
+          accessibilityRole="button"
+          hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
+          {Platform.OS === 'android' ? (
+            <Image
+              source={{uri: 'ic_settings_gear'}}
+              style={[styles.gearIcon, {tintColor: C.primaryText}]}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text style={[styles.gearBtn, {color: C.primaryText}]}>{'\u26ED'}</Text>
+          )}
+        </TouchableOpacity>
       ),
     });
   }, [navigation, C]);
@@ -90,6 +97,19 @@ export default function HomeScreen({navigation}) {
       <MostCooked />
       <QuickPresets />
       <AdBanner />
+
+      {/* Prominent Floating Action Button — primary entry point for adding a
+          timer. First-time users often miss the smaller "+" in the header, so
+          this large FAB at the bottom right makes the core action obvious.
+          The header "+" is kept for power users already used to it. */}
+      <TouchableOpacity
+        style={[styles.fab, {backgroundColor: C.tealText}]}
+        onPress={() => navigation.navigate('AddTimer')}
+        activeOpacity={0.85}
+        accessibilityLabel="Add timer"
+        accessibilityRole="button">
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -107,7 +127,33 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   gearBtn: {
-    fontSize: 18,
+    fontSize: 22,
+    fontWeight: '500',
+  },
+  gearIcon: {
+    width: 24,
+    height: 24,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+  },
+  fabText: {
+    fontSize: 34,
+    lineHeight: 38,
+    color: '#FFFFFF',
+    fontWeight: '300',
   },
   statusBar: {
     paddingHorizontal: 16,

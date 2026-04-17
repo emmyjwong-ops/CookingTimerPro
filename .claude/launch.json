@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "logo-preview",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "4321", "--directory", "/Users/emmyjw/CookingTimerPro/preview"],
+      "port": 4321
+    },
+    {
+      "name": "feedback-mockup",
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "4322", "--directory", "/Users/emmyjw/CookingTimerPro/preview-mockup"],
+      "port": 4322
+    }
+  ]
+}

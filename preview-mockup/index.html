@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CookingTimerPro — Feedback fixes v4.5.0</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    background: #eef1f4;
+    padding: 40px 20px;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; text-align: center; }
+  .subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 14px; }
+  .issue-block {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .issue-title { font-size: 18px; margin-bottom: 6px; font-weight: 600; }
+  .issue-desc { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .compare { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+  .phone {
+    width: 280px;
+    background: #fff;
+    border-radius: 24px;
+    border: 1px solid #d9dde3;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  .phone-label {
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .phone-label.before { background: #fee2e2; color: #b91c1c; }
+  .phone-label.after  { background: #dcfce7; color: #166534; }
+  .phone-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+  }
+  .phone-title { font-size: 16px; font-weight: 600; }
+  .phone-body { padding: 16px; min-height: 420px; background: #f5f6f8; position: relative; }
+
+  /* ---------- Issue 1 — Theme segmented control ---------- */
+  .setting-row {
+    background: #fff;
+    padding: 14px 16px;
+    border-bottom: 0.5px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .setting-row-label { font-size: 15px; }
+  .setting-value-old { color: #888; font-size: 14px; }
+  .setting-value-old::after { content: ' ›'; color: #ccc; }
+  .segmented {
+    display: flex;
+    background: #f5f6f8;
+    border-radius: 8px;
+    border: 0.5px solid #e5e7eb;
+    padding: 3px;
+    gap: 2px;
+    width: 60%;
+  }
+  .segmented-item {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+  }
+  .segmented-item.active {
+    background: #d1f5ee;
+    color: #0d7a6a;
+    font-weight: 700;
+  }
+  .theme-row {
+    background: #fff;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ---------- Issue 2 — FAB ---------- */
+  .home-list {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 0.5px solid #e5e7eb;
+  }
+  .home-list-title { font-size: 14px; font-weight: 600; }
+  .home-list-time { font-size: 24px; font-weight: 500; margin-top: 4px; color: #0d7a6a; }
+  .fab {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    background: #0d9488;
+    color: #fff;
+    font-size: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    font-weight: 300;
+  }
+  .header-plus-small { font-size: 18px; color: #0d9488; margin-right: 12px; font-weight: 400; }
+  .header-plus-big   { font-size: 18px; color: #0d9488; margin-right: 12px; font-weight: 400; }
+
+  /* ---------- Issue 3 — One-tap dismiss ---------- */
+  .notif {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 0.5px solid #e5e7eb;
+    margin-bottom: 8px;
+  }
+  .notif-title { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .notif-body { font-size: 12px; color: #666; }
+  .notif-actions { display: flex; gap: 8px; margin-top: 10px; border-top: 0.5px solid #eee; padding-top: 8px; }
+  .notif-action-btn {
+    background: none;
+    border: none;
+    color: #0d9488;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px;
+  }
+  .tap-count {
+    text-align: center;
+    padding: 14px;
+    margin: 10px 0;
+    background: #fef3c7;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #92400e;
+  }
+  .tap-count.good {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  /* ---------- Issue 4 — Gear icon ---------- */
+  .gear-old { font-size: 22px; }
+  .gear-new {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    vertical-align: middle;
+  }
+  .icon-demo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-size: 36px;
+    gap: 24px;
+  }
+  .gear-big {
+    width: 72px;
+    height: 72px;
+  }
+
+  /* ---------- Issue 5 — Edit group ---------- */
+  .group-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    border: 0.5px solid #e5e7eb;
+    margin-bottom: 10px;
+  }
+  .group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .group-name { font-weight: 600; font-size: 14px; }
+  .group-x { color: #ef4444; font-size: 15px; }
+  .group-edit-link { color: #0d7a6a; font-size: 13px; font-weight: 500; }
+  .group-timer { font-size: 12px; color: #666; padding: 2px 0; }
+  .group-start {
+    background: #0d9488;
+    color: #fff;
+    text-align: center;
+    padding: 9px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .group-hint {
+    text-align: center;
+    margin-top: 6px;
+    font-size: 10px;
+    font-style: italic;
+    color: #aaa;
+  }
+  .action-sheet {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 0;
+    margin-top: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
+  .action-title {
+    text-align: center;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    border-bottom: 0.5px solid #eee;
+  }
+  .action-subtitle {
+    text-align: center;
+    padding-bottom: 10px;
+    font-size: 11px;
+    color: #666;
+    border-bottom: 0.5px solid #eee;
+  }
+  .action-btn {
+    padding: 11px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 0.5px solid #eee;
+  }
+  .action-btn.destructive { color: #ef4444; }
+  .action-btn.cancel { font-weight: 600; border-bottom: none; }
+
+  .arrow {
+    text-align: center;
+    font-size: 28px;
+    color: #0d9488;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>CookingTimerPro — Feedback fixes</h1>
+<p class="subtitle">v4.5.0 · fem fixar baserat på Kefayatullahs test</p>
+
+<!-- ────────── ISSUE 1 ────────── -->
+<div class="issue-block">
+  <div class="issue-title">Issue 1 — Theme-toggle ser interaktiv ut nu</div>
+  <div class="issue-desc">Plain text "Light" → tydlig segmentkontroll som visar vilket läge som är aktivt.</div>
+  <div class="compare">
+    <div class="phone">
+      <div class="phone-label before">Före</div>
+      <div class="phone-header"><div class="phone-title">Settings</div></div>
+      <div class="phone-body" style="padding: 0;">
+        <div class="setting-row">
+          <span class="setting-row-label">Mode</span>
+          <span class="setting-value-old">Light</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-row-label">Vibration</span>
+          <span style="font-size:18px">⚪</span>
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone-label after">Efter</div>
+      <div class="phone-header"><div class="phone-title">Settings</div></div>
+      <div class="phone-body" style="padding: 0;">
+        <div class="theme-row">
+          <span class="setting-row-label">Theme</span>
+          <div class="segmented">
+            <div class="segmented-item">Light</div>
+            <div class="segmented-item active">Dark</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-row-label">Vibration</span>
+          <span style="font-size:18px">⚪</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────── ISSUE 2 ────────── -->
+<div class="issue-block">
+  <div class="issue-title">Issue 2 — Stor FAB för att lägga till timer</div>
+  <div class="issue-desc">Nya användare ser den direkt. Header-"+" behålls för vana användare.</div>
+  <div class="compare">
+    <div class="phone">
+      <div class="phone-label before">Före</div>
+      <div class="phone-header">
+        <div class="phone-title">CookingTimerPro</div>
+        <div>
+          <span class="header-plus-small">+</span>
+          <span style="font-size:18px">⚙</span>
+        </div>
+      </div>
+      <div class="phone-body">
+        <div style="color:#888; font-size:12px; margin-bottom:10px;">No active timers</div>
+        <div class="home-list">
+          <div class="home-list-title">Pasta</div>
+          <div class="home-list-time">08:23</div>
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone-label after">Efter</div>
+      <div class="phone-header">
+        <div class="phone-title">CookingTimerPro</div>
+        <div>
+          <svg class="gear-new" viewBox="0 0 24 24" fill="#111"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg>
+        </div>
+      </div>
+      <div class="phone-body">
+        <div style="color:#888; font-size:12px; margin-bottom:10px;">No active timers</div>
+        <div class="home-list">
+          <div class="home-list-title">Pasta</div>
+          <div class="home-list-time">08:23</div>
+        </div>
+        <div class="fab">+</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────── ISSUE 3 ────────── -->
+<div class="issue-block">
+  <div class="issue-title">Issue 3 — En-tryck dismiss på alarm-notifikationen</div>
+  <div class="issue-desc">Explicit "Stop alarm"-knapp + tap på notifikationen stoppar direkt (ingen app-öppning).</div>
+  <div class="compare">
+    <div class="phone">
+      <div class="phone-label before">Före</div>
+      <div class="phone-header"><div class="phone-title">Notifications</div></div>
+      <div class="phone-body">
+        <div class="notif">
+          <div class="notif-title">Timer complete! ⏰</div>
+          <div class="notif-body">Tap to open CookingTimerPro</div>
+        </div>
+        <div class="tap-count">
+          ① Tap notification → app öppnas<br>
+          ② Leta upp timern<br>
+          ③ Tryck "Dismiss"<br>
+          <strong>3 tryck</strong>
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone-label after">Efter</div>
+      <div class="phone-header"><div class="phone-title">Notifications</div></div>
+      <div class="phone-body">
+        <div class="notif">
+          <div class="notif-title">Timer complete! ⏰</div>
+          <div class="notif-body">Tap to stop the alarm</div>
+          <div class="notif-actions">
+            <button class="notif-action-btn">⏸ Stop alarm</button>
+          </div>
+        </div>
+        <div class="tap-count good">
+          ① Tap notification eller "Stop alarm"<br>
+          <strong>1 tryck</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────── ISSUE 4 ────────── -->
+<div class="issue-block">
+  <div class="issue-title">Issue 4 — Kugghjul istället för sol-lik ikon</div>
+  <div class="issue-desc">U+2699 ⚙ renderas ibland som en färgad sol på Samsung. U+26ED ⛭ är monokrom och tydligt en kugge.</div>
+  <div class="compare">
+    <div class="phone">
+      <div class="phone-label before">Före</div>
+      <div class="icon-demo">
+        <div style="text-align:center">
+          <div style="font-size:48px">⚙</div>
+          <div style="font-size:11px; color:#888; margin-top:6px">U+2699 — ser ut som sol<br>på Samsung One UI</div>
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone-label after">Efter</div>
+      <div class="icon-demo">
+        <div style="text-align:center">
+          <svg class="gear-big" viewBox="0 0 24 24" fill="#111"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg>
+          <div style="font-size:11px; color:#888; margin-top:6px">Vector drawable —<br>skarp kugge på alla enheter</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────── ISSUE 5 ────────── -->
+<div class="issue-block">
+  <div class="issue-title">Issue 5 — Redigera timer-grupper</div>
+  <div class="issue-desc">Edit-länk i header + långtryck öppnar Edit / Remove / Cancel action sheet.</div>
+  <div class="compare">
+    <div class="phone">
+      <div class="phone-label before">Före</div>
+      <div class="phone-header"><div class="phone-title">Timer Groups</div></div>
+      <div class="phone-body">
+        <div class="group-card">
+          <div class="group-header">
+            <div class="group-name">Sunday Roast</div>
+            <div class="group-x">✕</div>
+          </div>
+          <div class="group-timer">· Chicken — 1h 30m</div>
+          <div class="group-timer">· Potatoes — 45 min</div>
+          <div class="group-timer">· Carrots — 20 min</div>
+          <div class="group-start">▶  Start all timers</div>
+        </div>
+        <div style="text-align:center; color:#b91c1c; font-size:11px; margin-top:10px">
+          Ingen edit-möjlighet<br>(måste ta bort och skapa igen)
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone-label after">Efter</div>
+      <div class="phone-header"><div class="phone-title">Timer Groups</div></div>
+      <div class="phone-body">
+        <div class="group-card">
+          <div class="group-header">
+            <div class="group-name">Sunday Roast</div>
+            <div class="group-edit-link">Edit</div>
+          </div>
+          <div class="group-timer">· Chicken — 1h 30m</div>
+          <div class="group-timer">· Potatoes — 45 min</div>
+          <div class="group-timer">· Carrots — 20 min</div>
+          <div class="group-start">▶  Start all timers</div>
+          <div class="group-hint">Long-press for more options</div>
+        </div>
+        <div class="action-sheet">
+          <div class="action-title">Sunday Roast</div>
+          <div class="action-subtitle">What would you like to do?</div>
+          <div class="action-btn">Edit</div>
+          <div class="action-btn destructive">Remove</div>
+          <div class="action-btn cancel">Cancel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

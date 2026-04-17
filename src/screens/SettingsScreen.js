@@ -31,6 +31,48 @@ function SettingRow({label, right, onPress, C}) {
   );
 }
 
+// Segmented control for two mutually-exclusive options.
+// Highlights the active segment with tealBg + tealText so users can clearly
+// see which theme is currently selected.
+function ThemeSegmented({value, onChange, C}) {
+  const options = [
+    {key: 'light', label: 'Light'},
+    {key: 'dark', label: 'Dark'},
+  ];
+  return (
+    <View
+      style={[
+        styles.segmented,
+        {backgroundColor: C.secondaryBg, borderColor: C.border},
+      ]}>
+      {options.map(opt => {
+        const active = value === opt.key;
+        return (
+          <TouchableOpacity
+            key={opt.key}
+            accessibilityRole="button"
+            accessibilityState={{selected: active}}
+            activeOpacity={0.75}
+            style={[
+              styles.segmentedItem,
+              active && {backgroundColor: C.tealBg},
+            ]}
+            onPress={() => onChange(opt.key)}>
+            <Text
+              style={[
+                styles.segmentedText,
+                {color: active ? C.tealText : C.secondaryText},
+                active && styles.segmentedTextActive,
+              ]}>
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
 export default function SettingsScreen({navigation}) {
   const {settings, updateSetting} = useSettings();
   const {buyPremium, restorePurchases, purchasing, displayPrice} = usePurchase();
@@ -72,8 +114,6 @@ export default function SettingsScreen({navigation}) {
     };
   }, []);
 
-  const darkModeLabel = {light: 'Light', dark: 'Dark'};
-
   const currentSound = ALARM_SOUNDS.find(s => s.id === settings.alertSound) ?? ALARM_SOUNDS[0];
 
   const handleSoundSelect = sound => {
@@ -101,10 +141,6 @@ export default function SettingsScreen({navigation}) {
       soundPreviewTimeout.current = null;
     }, 2500);
     setSoundPickerVisible(false);
-  };
-
-  const cycleDarkMode = () => {
-    updateSetting('darkMode', settings.darkMode === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -181,16 +217,14 @@ export default function SettingsScreen({navigation}) {
             />
           }
         />
-        <SettingRow
-          label="Mode"
-          C={C}
-          right={
-            <Text style={[styles.rowValue, {color: C.secondaryText}]}>
-              {darkModeLabel[settings.darkMode] ?? 'Light'}
-            </Text>
-          }
-          onPress={cycleDarkMode}
-        />
+        <View style={[styles.themeRow, {borderBottomColor: C.border}]}>
+          <Text style={[styles.rowLabel, {color: C.primaryText}]}>Theme</Text>
+          <ThemeSegmented
+            value={settings.darkMode === 'dark' ? 'dark' : 'light'}
+            onChange={v => updateSetting('darkMode', v)}
+            C={C}
+          />
+        </View>
         <SettingRow
           label="Manage presets"
           C={C}
@@ -325,6 +359,27 @@ const styles = StyleSheet.create({
   rowLabel: {fontSize: 15},
   rowValue: {fontSize: 14},
   rowChevron: {fontSize: 18},
+  themeRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    gap: 10,
+  },
+  segmented: {
+    flexDirection: 'row',
+    borderRadius: 8,
+    borderWidth: 0.5,
+    overflow: 'hidden',
+    padding: 3,
+  },
+  segmentedItem: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 6,
+  },
+  segmentedText: {fontSize: 14, fontWeight: '500'},
+  segmentedTextActive: {fontWeight: '700'},
   rowBadge: {
     fontSize: 11,
     fontWeight: '600',
