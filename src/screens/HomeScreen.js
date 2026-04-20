@@ -1,18 +1,17 @@
-import React, {useEffect} from 'react';
+import React, {useCallback} from 'react';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  NativeModules,
   Image,
   Platform,
 } from 'react-native';
 // FIX: use SafeAreaView from react-native-safe-area-context instead of the
 // built-in one from react-native — the context-aware version gives correct
 // insets on Android (e.g. devices with punch-hole cameras or navigation bars).
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../hooks/useTheme';
 import {useTimers} from '../context/TimerContext';
 import {useSettings} from '../context/SettingsContext';
@@ -21,20 +20,26 @@ import QuickPresets from '../components/QuickPresets';
 import AdBanner from '../components/AdBanner';
 import MostCooked from '../components/MostCooked';
 
+// Approximate heights below the Quick start pills used to vertically align
+// the FAB's center with the row of pills. The AdBanner sits below Quick start
+// (≈60 dp adaptive banner height on phones) and we lift the FAB by roughly
+// half a pill height so it visually sits on the same line as "Pasta", "Rice",
+// "Eggs", etc. Tune these if the layout changes.
+const AD_BANNER_HEIGHT = 60;
+const QUICK_PRESETS_BOTTOM_TO_PILL_CENTER = 30;
+
 export default function HomeScreen({navigation}) {
   const {timers, activeTimerCount} = useTimers();
   const {settings} = useSettings();
   const C = useTheme();
+  // Safe-area bottom inset — Samsung gesture nav bar overlays the bottom of
+  // the screen and covered the FAB at `bottom: 24`. Lifting the FAB by the
+  // inset guarantees it clears the nav bar on every device.
+  const insets = useSafeAreaInsets();
 
-  // Apply the "Keep screen on" setting via the native ScreenWakeModule.
-  // Runs whenever the setting changes so it stays in sync.
-  useEffect(() => {
-    if (settings.keepScreenOn) {
-      NativeModules.ScreenWakeModule?.enable();
-    } else {
-      NativeModules.ScreenWakeModule?.disable();
-    }
-  }, [settings.keepScreenOn]);
+  // ISSUE 18: the "Keep screen on" effect is now applied app-wide in App.tsx
+  // so that it works on all screens (timer detail, settings, etc.), not only
+  // while the user is on the Home screen.
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -63,15 +68,19 @@ export default function HomeScreen({navigation}) {
     });
   }, [navigation, C]);
 
-  const renderEmpty = () => (
-    <View style={styles.empty}>
-      <Text style={[styles.emptyTitle, {color: C.primaryText}]}>
-        No timers running
-      </Text>
-      <Text style={[styles.emptySubtitle, {color: C.secondaryText}]}>
-        Tap + or use a quick preset below to get started
-      </Text>
-    </View>
+  // ISSUE 23: memoize renderEmpty so FlatList doesn't remount it on every tick.
+  const renderEmpty = useCallback(
+    () => (
+      <View style={styles.empty}>
+        <Text style={[styles.emptyTitle, {color: C.primaryText}]}>
+          No timers running
+        </Text>
+        <Text style={[styles.emptySubtitle, {color: C.secondaryText}]}>
+          Tap the + button or use a quick preset to get started
+        </Text>
+      </View>
+    ),
+    [C.primaryText, C.secondaryText],
   );
 
   return (
@@ -99,11 +108,27 @@ export default function HomeScreen({navigation}) {
       <AdBanner />
 
       {/* Prominent Floating Action Button — primary entry point for adding a
-          timer. First-time users often miss the smaller "+" in the header, so
-          this large FAB at the bottom right makes the core action obvious.
-          The header "+" is kept for power users already used to it. */}
+          timer. Positioned so its vertical center aligns with the Quick start
+          pill row ("Pasta", "Rice", etc.) and it clears the device's bottom
+          navigation bar via the safe-area inset. */}
       <TouchableOpacity
-        style={[styles.fab, {backgroundColor: C.tealText}]}
+        style={[
+          styles.fab,
+          {
+            backgroundColor: C.tealText,
+            // Lift FAB above the nav bar, above the AdBanner (if present),
+            // and up to the pill row's vertical center. 30 offsets half the
+            // FAB height so its center (not its bottom) aligns with the pill
+            // center. ISSUE 6: AdBanner renders null for Premium users, so
+            // AD_BANNER_HEIGHT should be 0 when Premium — otherwise the FAB
+            // floats with a ~60dp gap above the pills.
+            bottom:
+              insets.bottom +
+              (settings.isPremium ? 0 : AD_BANNER_HEIGHT) +
+              QUICK_PRESETS_BOTTOM_TO_PILL_CENTER -
+              30,
+          },
+        ]}
         onPress={() => navigation.navigate('AddTimer')}
         activeOpacity={0.85}
         accessibilityLabel="Add timer"
@@ -136,7 +161,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
+    // `bottom` is set dynamically via insets in render so the FAB clears the
+    // device's gesture navigation bar and aligns with the Quick start pills.
     right: 20,
     width: 60,
     height: 60,

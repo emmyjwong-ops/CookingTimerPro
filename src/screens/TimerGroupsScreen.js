@@ -123,7 +123,18 @@ export default function TimerGroupsScreen({navigation}) {
     if (seconds <= 0) {return;}
     // FIX: give each in-progress timer a stable id so React keys are not
     // index-based (index keys break when items are removed from the middle).
-    setGroupTimers(prev => [...prev, {id: Date.now().toString(), name, note: '', seconds}]);
+    setGroupTimers(prev => [
+      ...prev,
+      {
+        // FIX: `Date.now().toString()` alone collides when two timers are added
+        // in the same millisecond (e.g. a quick double-tap). Append a short
+        // random suffix for uniqueness.
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name,
+        note: '',
+        seconds,
+      },
+    ]);
     setTimerName('');
     setTimerHours('');
     setTimerMinutes('');

@@ -80,6 +80,25 @@ class AlarmSchedulerModule(reactContext: ReactApplicationContext) :
             action = AlarmSoundService.ACTION_STOP
             putExtra("timerId", timerId)
         }
-        reactApplicationContext.startService(stopIntent)
+        // BUG FIX: on Android 8+ startService() throws IllegalStateException if
+        // the service is not currently running (or in background restrictions).
+        // If the targeted stop fails, fall back to stopService() as a best-effort
+        // cleanup — if the service is dead there's nothing playing anyway.
+        try {
+            reactApplicationContext.startService(stopIntent)
+        } catch (e: IllegalStateException) {
+            try {
+                reactApplicationContext.stopService(
+                    Intent(reactApplicationContext, AlarmSoundService::class.java)
+                )
+            } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // Any other unexpected failure — best-effort cleanup.
+            try {
+                reactApplicationContext.stopService(
+                    Intent(reactApplicationContext, AlarmSoundService::class.java)
+                )
+            } catch (_: Exception) {}
+        }
     }
 }

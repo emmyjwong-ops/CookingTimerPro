@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {StatusBar} from 'react-native';
+import {StatusBar, NativeModules} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -16,6 +16,16 @@ function AppContent() {
   useEffect(() => {
     configureNotifications();
   }, []);
+
+  // ISSUE 18: apply "Keep screen on" app-wide (previously was only applied
+  // while the user was on HomeScreen). Runs whenever the setting changes.
+  useEffect(() => {
+    if (settings.keepScreenOn) {
+      NativeModules.ScreenWakeModule?.enable();
+    } else {
+      NativeModules.ScreenWakeModule?.disable();
+    }
+  }, [settings.keepScreenOn]);
 
   return (
     <SafeAreaProvider>

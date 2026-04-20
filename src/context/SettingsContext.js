@@ -21,7 +21,16 @@ export function SettingsProvider({children}) {
   useEffect(() => {
     loadSettings().then(saved => {
       if (saved) {
-        setSettings(prev => ({...prev, ...saved}));
+        // ISSUE 19: migrate legacy `darkMode: 'system'` (from an earlier
+        // version that supported a third "System" segment) to 'light'.
+        // Without this the theme segmented control would silently fall into
+        // the "light" branch anyway, but the saved value would stay as
+        // 'system' and re-confuse future readers. Normalize once here.
+        const migrated = {...saved};
+        if (migrated.darkMode !== 'light' && migrated.darkMode !== 'dark') {
+          migrated.darkMode = 'light';
+        }
+        setSettings(prev => ({...prev, ...migrated}));
       }
       setLoaded(true);
     });

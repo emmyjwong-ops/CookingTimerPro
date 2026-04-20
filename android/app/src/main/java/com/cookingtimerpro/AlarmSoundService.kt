@@ -62,7 +62,31 @@ class AlarmSoundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // BUG FIX: ALWAYS call startForeground first — before any when/return path.
+        // BUG 14 FIX: when the OS restarts this START_STICKY service after killing it,
+        // intent is null. We have no alarm to play — stop immediately.
+        if (intent == null) {
+            // ISSUE 24: cleanly tear down any lingering foreground notification
+            // before stopping, so the OS releases the fg state in one step.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                try { stopForeground(STOP_FOREGROUND_REMOVE) } catch (_: Exception) {}
+            } else {
+                @Suppress("DEPRECATION")
+                try { stopForeground(true) } catch (_: Exception) {}
+            }
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        // BUG 3 FIX: set activeTimerId from the intent BEFORE calling
+        // startForegroundWithNotification(), so the stop-action PendingIntent
+        // carries the correct timerId extra. Previously activeTimerId was null
+        // at notification-build time, and tapping "Stop alarm" matched the
+        // requestedId == null branch — stopping ANY currently-playing alarm.
+        if (intent.action == ACTION_PLAY) {
+            activeTimerId = intent.getStringExtra("timerId")
+        }
+
+        // BUG FIX: ALWAYS call startForeground before any when/return path.
         // Android enforces a 5-second contract: if startForegroundService() was called
         // to deliver this intent, we *must* call startForeground() before returning,
         // even for a spurious ACTION_STOP that arrives while the service isn't
@@ -70,20 +94,10 @@ class AlarmSoundService : Service() {
         // / ANR on API 26+.
         startForegroundWithNotification()
 
-        // BUG 14 FIX: when the OS restarts this START_STICKY service after killing it,
-        // intent is null. We have no alarm to play — stop immediately.
-        if (intent == null) {
-            stopSelf()
-            return START_NOT_STICKY
-        }
         when (intent.action) {
             ACTION_PLAY -> {
-                val timerId  = intent.getStringExtra("timerId")
                 val soundFile = intent.getStringExtra("soundFile") ?: "bell"
                 val vibrate   = intent.getBooleanExtra("vibrate", false)
-                // BUG 1 FIX: record which timer triggered this alarm so that a
-                // stop request for a *different* timer is ignored.
-                activeTimerId = timerId
                 // If already playing (e.g. two timers complete simultaneously), don't restart.
                 if (player == null) {
                     playSound(soundFile)
@@ -142,7 +156,9 @@ class AlarmSoundService : Service() {
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentIntent(stopPI)
             .addAction(android.R.drawable.ic_media_pause, "Stop alarm", stopPI)
-            .setAutoCancel(true)
+            // ISSUE 2: setAutoCancel(true) conflicts with setOngoing(true) —
+            // the notification is dismissed by stopForeground(STOP_FOREGROUND_REMOVE)
+            // in stopAlarm(), no need to auto-cancel on tap.
             .setOngoing(true)
             .setSilent(true) // Sound and vibration handled natively, not via notification
             .build()
@@ -172,19 +188,25 @@ class AlarmSoundService : Service() {
                     .setAudioAttributes(audioAttributes)
                     .setAcceptsDelayedFocusGain(false)
                     .setOnAudioFocusChangeListener { change ->
+                        // ISSUE 21: synchronize player access — these callbacks
+                        // run on a different thread than stopAlarm(), and a race
+                        // between release() and setVolume()/start() crashes with
+                        // IllegalStateException on a released MediaPlayer.
                         when (change) {
                             AudioManager.AUDIOFOCUS_LOSS -> stopAlarm()
                             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
                             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                                // Duck instead of stopping — a cooking alarm must stay
-                                // audible through short interruptions (notifications).
-                                try { player?.setVolume(0.3f, 0.3f) } catch (_: Exception) {}
+                                synchronized(this) {
+                                    try { player?.setVolume(0.3f, 0.3f) } catch (_: Exception) {}
+                                }
                             }
                             AudioManager.AUDIOFOCUS_GAIN -> {
-                                try {
-                                    player?.setVolume(1.0f, 1.0f)
-                                    if (player?.isPlaying == false) player?.start()
-                                } catch (_: Exception) {}
+                                synchronized(this) {
+                                    try {
+                                        player?.setVolume(1.0f, 1.0f)
+                                        if (player?.isPlaying == false) player?.start()
+                                    } catch (_: Exception) {}
+                                }
                             }
                         }
                     }
@@ -238,10 +260,14 @@ class AlarmSoundService : Service() {
     }
 
     private fun stopAlarm() {
-        try {
-            player?.let { if (it.isPlaying) it.stop(); it.release() }
-        } catch (_: Exception) {}
-        player = null
+        // ISSUE 21: lock around player release to prevent racing setVolume()/start()
+        // in the audio-focus callback on a released MediaPlayer.
+        synchronized(this) {
+            try {
+                player?.let { if (it.isPlaying) it.stop(); it.release() }
+            } catch (_: Exception) {}
+            player = null
+        }
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -256,6 +282,8 @@ class AlarmSoundService : Service() {
         try {
             vibrator?.cancel()
         } catch (_: Exception) {}
+
+        activeTimerId = null
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)

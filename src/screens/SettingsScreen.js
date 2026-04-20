@@ -253,7 +253,14 @@ export default function SettingsScreen({navigation}) {
         />
       </View>
 
-      <TouchableOpacity onPress={handleVersionTap} activeOpacity={1}>
+      <TouchableOpacity
+        onPress={handleVersionTap}
+        activeOpacity={1}
+        // ISSUE 25: the version line is an invisible dev shortcut, not a
+        // user-facing control. Mark it inaccessible so screen readers
+        // announce it as plain text, not as a tappable button.
+        accessible={false}
+        importantForAccessibility="no-hide-descendants">
         <Text style={[styles.version, {color: C.tertiaryText}]}>
           CookingTimerPro v{APP_VERSION}
         </Text>

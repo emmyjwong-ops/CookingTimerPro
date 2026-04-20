@@ -6,7 +6,14 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
-import {saveTimers, loadTimers, incrementCookStat, loadCookStats} from '../utils/storage';
+import {
+  saveTimers,
+  loadTimers,
+  incrementCookStat,
+  loadCookStats,
+  removeCookStat,
+  renameCookStat,
+} from '../utils/storage';
 import {ensureAndroidPermissions} from '../utils/androidPermissions';
 import {getSoundFile} from '../constants/sounds';
 import {
@@ -40,33 +47,44 @@ export function TimerProvider({children}) {
 
   // Load persisted timers on mount
   useEffect(() => {
-    loadCookStats().then(stats => setCookStats(stats));
-    loadTimers().then(saved => {
-      if (saved && saved.length > 0) {
-        const now = Date.now();
-        const restored = saved.map(t => {
-          if (t.isRunning && !t.isComplete && t.endTime) {
-            const remaining = Math.max(0, Math.floor((t.endTime - now) / 1000));
-            // BUG 11 FIX: if the timer expired while the app was closed the
-            // AlarmManager intent already fired, but cancel the pending intent
-            // anyway (guards against rare OS delays) and stop any sound that
-            // was left playing in AlarmSoundService before the app reopened.
-            if (remaining === 0) {
-              cancelNativeAlarm(t.id);
+    // ISSUE 16: load cookStats and timers in parallel, but wait for BOTH to
+    // resolve before flipping `loaded` / updating state. Previously the two
+    // promises raced — a fast-completing timer could call
+    // incrementCookStat → loadCookStats → setCookStats before the initial
+    // loadCookStats settled, and the stale initial result would overwrite
+    // the freshly-incremented stats.
+    Promise.all([loadCookStats(), loadTimers()])
+      .then(([stats, saved]) => {
+        setCookStats(stats);
+        if (saved && saved.length > 0) {
+          const now = Date.now();
+          const restored = saved.map(t => {
+            if (t.isRunning && !t.isComplete && t.endTime) {
+              const remaining = Math.max(
+                0,
+                Math.floor((t.endTime - now) / 1000),
+              );
+              // BUG 11 FIX: if the timer expired while the app was closed the
+              // AlarmManager intent already fired, but cancel the pending intent
+              // anyway (guards against rare OS delays) and stop any sound that
+              // was left playing in AlarmSoundService before the app reopened.
+              if (remaining === 0) {
+                cancelNativeAlarm(t.id);
+              }
+              return {
+                ...t,
+                remainingSeconds: remaining,
+                isComplete: remaining === 0,
+                isRunning: remaining > 0,
+              };
             }
-            return {
-              ...t,
-              remainingSeconds: remaining,
-              isComplete: remaining === 0,
-              isRunning: remaining > 0,
-            };
-          }
-          return t;
-        });
-        setTimers(restored);
-      }
-      setLoaded(true);
-    });
+            return t;
+          });
+          setTimers(restored);
+        }
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
   }, []);
 
   // Persist on every change
@@ -126,15 +144,30 @@ export function TimerProvider({children}) {
           Math.max(0, Math.floor((t.endTime - now) / 1000)) === 0,
       );
 
+      // ISSUE 17: record cook stats the moment a timer completes (rather
+      // than only when the user taps Dismiss). We mark the timer with
+      // `_cookStatRecorded = true` below so dismissTimer does not re-record.
+      if (completing.length > 0) {
+        Promise.all(
+          completing.map(t => incrementCookStat(t.name, t.totalSeconds)),
+        )
+          .then(() => loadCookStats())
+          .then(stats => setCookStats(stats))
+          .catch(() => {});
+      }
+
       setTimers(prev =>
         prev.map(t => {
           if (t.isRunning && !t.isComplete && t.endTime) {
             const remaining = Math.max(0, Math.floor((t.endTime - now) / 1000));
+            const isComplete = remaining === 0;
             return {
               ...t,
               remainingSeconds: remaining,
               isRunning: remaining > 0,
-              isComplete: remaining === 0,
+              isComplete,
+              // Mark so dismissTimer does not double-count this completion.
+              _cookStatRecorded: isComplete ? true : t._cookStatRecorded,
             };
           }
           return t;
@@ -189,8 +222,13 @@ export function TimerProvider({children}) {
   );
 
   const dismissTimer = useCallback(id => {
+    // ISSUE 17: cook-stat recording now happens in the countdown tick the
+    // moment a timer completes. To avoid double-counting we only record here
+    // if the timer is complete AND the tick handler didn't already record it
+    // (e.g. the timer was restored from storage already-complete, so no tick
+    // ever flipped it). `_cookStatRecorded` is the single-source flag.
     const timer = timersRef.current.find(t => t.id === id);
-    if (timer?.isComplete) {
+    if (timer?.isComplete && !timer._cookStatRecorded) {
       incrementCookStat(timer.name, timer.totalSeconds)
         .then(() => loadCookStats())
         .then(stats => setCookStats(stats))
@@ -311,6 +349,19 @@ export function TimerProvider({children}) {
     t => t.isRunning && !t.isComplete,
   ).length;
 
+  // ── Most-cooked editing ────────────────────────────────────────────────
+  const removeCookStatEntry = useCallback(async name => {
+    await removeCookStat(name);
+    const fresh = await loadCookStats();
+    setCookStats(fresh);
+  }, []);
+
+  const renameCookStatEntry = useCallback(async (oldName, newName) => {
+    await renameCookStat(oldName, newName);
+    const fresh = await loadCookStats();
+    setCookStats(fresh);
+  }, []);
+
   return (
     <TimerContext.Provider
       value={{
@@ -322,6 +373,8 @@ export function TimerProvider({children}) {
         dismissTimer,
         extendTimer,
         pauseTimer,
+        removeCookStatEntry,
+        renameCookStatEntry,
       }}>
       {children}
     </TimerContext.Provider>

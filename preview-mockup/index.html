@@ -122,6 +122,108 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     font-weight: 300;
   }
+  /* v4.5.3 — FAB aligned with Quick start pill row, above nav bar and ad */
+  .fab-aligned {
+    position: absolute;
+    bottom: 120px;     /* nav bar (~28) + ad (~50) + below pill row */
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background: #0d9488;
+    color: #fff;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    font-weight: 300;
+  }
+  .quickstart-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #9aa3ad;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    padding: 0 12px;
+  }
+  .quickstart-row {
+    display: flex;
+    gap: 6px;
+    padding: 0 12px;
+    overflow: hidden;
+  }
+  .quickstart-pill {
+    background: #d1f5ee;
+    color: #0d7a6a;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 48px;
+  }
+  .quickstart-pill .pill-time {
+    display: block;
+    font-size: 9px;
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+  .ad-banner {
+    background: #f5f6f8;
+    border: 0.5px dashed #c9d0d8;
+    padding: 6px;
+    margin: 8px 12px 0 12px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 9px;
+    color: #888;
+  }
+  .nav-bar {
+    background: #111;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-bar::after {
+    content: '';
+    width: 110px;
+    height: 3px;
+    background: #fff;
+    border-radius: 2px;
+    opacity: 0.85;
+  }
+  /* Dashed guide line to show the alignment */
+  .align-guide {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    border-top: 1px dashed #0d9488;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+  .align-label {
+    position: absolute;
+    background: #0d9488;
+    color: #fff;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    left: 10px;
+    transform: translateY(-50%);
+    white-space: nowrap;
+  }
+  .nav-label {
+    position: absolute;
+    background: #ef4444;
+    color: #fff;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
   .header-plus-small { font-size: 18px; color: #0d9488; margin-right: 12px; font-weight: 400; }
   .header-plus-big   { font-size: 18px; color: #0d9488; margin-right: 12px; font-weight: 400; }
 
@@ -301,40 +403,68 @@
 <!-- ────────── ISSUE 2 ────────── -->
 <div class="issue-block">
   <div class="issue-title">Issue 2 — Stor FAB för att lägga till timer</div>
-  <div class="issue-desc">Nya användare ser den direkt. Header-"+" behålls för vana användare.</div>
+  <div class="issue-desc">
+    v4.5.3 · FAB flyttad så den <strong>alignas horisontellt med Quick start-pillerna</strong>
+    (Pasta, Rice, Eggs …) och sitter <strong>över</strong> både annonsen och enhetens
+    navigeringsfält (gesturbaren längst ner).
+  </div>
   <div class="compare">
     <div class="phone">
-      <div class="phone-label before">Före</div>
-      <div class="phone-header">
-        <div class="phone-title">CookingTimerPro</div>
-        <div>
-          <span class="header-plus-small">+</span>
-          <span style="font-size:18px">⚙</span>
-        </div>
-      </div>
-      <div class="phone-body">
-        <div style="color:#888; font-size:12px; margin-bottom:10px;">No active timers</div>
-        <div class="home-list">
-          <div class="home-list-title">Pasta</div>
-          <div class="home-list-time">08:23</div>
-        </div>
-      </div>
-    </div>
-    <div class="phone">
-      <div class="phone-label after">Efter</div>
+      <div class="phone-label before">Före (v4.5.2)</div>
       <div class="phone-header">
         <div class="phone-title">CookingTimerPro</div>
         <div>
           <svg class="gear-new" viewBox="0 0 24 24" fill="#111"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg>
         </div>
       </div>
-      <div class="phone-body">
-        <div style="color:#888; font-size:12px; margin-bottom:10px;">No active timers</div>
-        <div class="home-list">
+      <div class="phone-body" style="padding: 10px 0 0 0; position:relative;">
+        <div style="color:#888; font-size:11px; padding:0 12px 8px 12px;">No active timers</div>
+        <div class="home-list" style="margin: 0 12px 10px 12px;">
           <div class="home-list-title">Pasta</div>
           <div class="home-list-time">08:23</div>
         </div>
-        <div class="fab">+</div>
+        <div class="quickstart-label">Quick start</div>
+        <div class="quickstart-row">
+          <div class="quickstart-pill">Pasta<span class="pill-time">10m</span></div>
+          <div class="quickstart-pill">Rice<span class="pill-time">20m</span></div>
+          <div class="quickstart-pill">Eggs<span class="pill-time">6m</span></div>
+          <div class="quickstart-pill">Tea<span class="pill-time">3m</span></div>
+        </div>
+        <div class="ad-banner">· advertisement ·</div>
+        <!-- FAB sitting low — partly covered by nav bar -->
+        <div class="fab" style="bottom: 2px; right: 12px; width: 56px; height: 56px; border-radius: 28px; font-size: 32px;">+</div>
+        <div class="nav-bar" style="position:absolute; bottom: 0; left: 0; right: 0;"></div>
+        <span class="nav-label" style="left: 90px; bottom: 2px;">covered by nav bar ↓</span>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone-label after">Efter (v4.5.3)</div>
+      <div class="phone-header">
+        <div class="phone-title">CookingTimerPro</div>
+        <div>
+          <svg class="gear-new" viewBox="0 0 24 24" fill="#111"><path d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg>
+        </div>
+      </div>
+      <div class="phone-body" style="padding: 10px 0 0 0; position:relative;">
+        <div style="color:#888; font-size:11px; padding:0 12px 8px 12px;">No active timers</div>
+        <div class="home-list" style="margin: 0 12px 10px 12px;">
+          <div class="home-list-title">Pasta</div>
+          <div class="home-list-time">08:23</div>
+        </div>
+        <div class="quickstart-label">Quick start</div>
+        <div class="quickstart-row">
+          <div class="quickstart-pill">Pasta<span class="pill-time">10m</span></div>
+          <div class="quickstart-pill">Rice<span class="pill-time">20m</span></div>
+          <div class="quickstart-pill">Eggs<span class="pill-time">6m</span></div>
+          <div class="quickstart-pill">Tea<span class="pill-time">3m</span></div>
+        </div>
+        <div class="ad-banner">· advertisement ·</div>
+        <!-- FAB aligned with Quick start pills, above ad + nav bar -->
+        <div class="fab-aligned">+</div>
+        <!-- Dashed alignment guide across pill center -->
+        <div class="align-guide" style="bottom: 148px;"></div>
+        <span class="align-label" style="bottom: 148px;">aligned with pills ↑</span>
+        <div class="nav-bar" style="position:absolute; bottom: 0; left: 0; right: 0;"></div>
       </div>
     </div>
   </div>
@@ -457,6 +587,129 @@
     </div>
   </div>
 </div>
+
+<!-- ────────── BONUS — Most Cooked editable ────────── -->
+<div class="issue-block">
+  <div class="issue-title">Bonus — Most Cooked är nu redigerbar</div>
+  <div class="issue-desc">
+    v4.5.4 · Långtryck på en rad (🥇 Pasta, 🥈 Rice, 🥉 Eggs) öppnar en action sheet
+    med <strong>Rename / Remove / Cancel</strong>. Rename öppnar en liten modal med textfält.
+    Remove kräver bekräftelse.
+  </div>
+  <div class="compare">
+    <div class="phone">
+      <div class="phone-label before">Före</div>
+      <div class="phone-header"><div class="phone-title">CookingTimerPro</div></div>
+      <div class="phone-body">
+        <div class="quickstart-label" style="padding:0; margin-bottom:8px;">Most cooked</div>
+        <div class="most-cooked-list">
+          <div class="most-cooked-row">
+            <span style="font-size:15px">🥇</span>
+            <span class="mc-name">Pasta</span>
+            <span class="mc-duration">10m</span>
+            <span class="mc-count">8×</span>
+          </div>
+          <div class="most-cooked-row">
+            <span style="font-size:15px">🥈</span>
+            <span class="mc-name">Rice</span>
+            <span class="mc-duration">20m</span>
+            <span class="mc-count">5×</span>
+          </div>
+          <div class="most-cooked-row" style="border-bottom: none;">
+            <span style="font-size:15px">🥉</span>
+            <span class="mc-name">Eggs</span>
+            <span class="mc-duration">6m</span>
+            <span class="mc-count">3×</span>
+          </div>
+        </div>
+        <div style="text-align:center; color:#b91c1c; font-size:11px; margin-top:14px; font-style:italic">
+          Ingen möjlighet att ta bort<br>eller byta namn
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone-label after">Efter</div>
+      <div class="phone-header"><div class="phone-title">CookingTimerPro</div></div>
+      <div class="phone-body">
+        <div class="quickstart-label" style="padding:0; margin-bottom:8px;">Most cooked</div>
+        <div class="most-cooked-list">
+          <div class="most-cooked-row" style="background:#f0f4f8">
+            <span style="font-size:15px">🥇</span>
+            <span class="mc-name">Pasta</span>
+            <span class="mc-duration">10m</span>
+            <span class="mc-count">8×</span>
+          </div>
+          <div class="most-cooked-row">
+            <span style="font-size:15px">🥈</span>
+            <span class="mc-name">Rice</span>
+            <span class="mc-duration">20m</span>
+            <span class="mc-count">5×</span>
+          </div>
+          <div class="most-cooked-row" style="border-bottom: none;">
+            <span style="font-size:15px">🥉</span>
+            <span class="mc-name">Eggs</span>
+            <span class="mc-duration">6m</span>
+            <span class="mc-count">3×</span>
+          </div>
+        </div>
+        <div style="text-align:center; font-size:10px; color:#0d7a6a; margin-top:6px; font-style:italic">
+          ↑ long-press "Pasta"
+        </div>
+        <div class="action-sheet" style="margin-top:8px">
+          <div class="action-title">Pasta</div>
+          <div class="action-subtitle">What would you like to do?</div>
+          <div class="action-btn">Rename</div>
+          <div class="action-btn destructive">Remove</div>
+          <div class="action-btn cancel">Cancel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rename-modal preview -->
+  <div style="margin-top: 24px;">
+    <div style="font-size:13px; color:#666; margin-bottom:10px; text-align:center">
+      När du trycker "Rename" öppnas:
+    </div>
+    <div style="display:flex; justify-content:center">
+      <div class="phone" style="width:300px">
+        <div class="phone-label after">Rename-modal</div>
+        <div class="phone-body" style="background:rgba(0,0,0,0.4); min-height:300px; display:flex; align-items:center; justify-content:center; padding:16px;">
+          <div style="background:#fff; padding:20px; border-radius:14px; width:100%; box-shadow:0 6px 20px rgba(0,0,0,0.15)">
+            <div style="font-size:15px; font-weight:600; margin-bottom:12px">Rename</div>
+            <div style="border: 0.5px solid #ddd; background:#f5f6f8; padding:10px 12px; border-radius:8px; font-size:15px; margin-bottom:14px; color:#111;">
+              Pasta<span style="color:#0d7a6a; animation: blink 1s infinite;">|</span>
+            </div>
+            <div style="display:flex; gap:10px">
+              <div style="flex:1; border: 0.5px solid #ddd; border-radius:8px; padding:10px; text-align:center; font-size:13px; color:#666">Cancel</div>
+              <div style="flex:1; background:#0d9488; color:#fff; border-radius:8px; padding:10px; text-align:center; font-size:13px; font-weight:600">Save</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .most-cooked-list {
+    background: #fff;
+    border-radius: 10px;
+    border: 0.5px solid #e5e7eb;
+    overflow: hidden;
+  }
+  .most-cooked-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    gap: 10px;
+    border-bottom: 0.5px solid #eee;
+  }
+  .mc-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .mc-duration { color: #0d7a6a; font-size: 12px; font-weight: 500; }
+  .mc-count { color: #999; font-size: 12px; }
+  @keyframes blink { 0%, 49% {opacity:1} 50%, 100% {opacity:0} }
+</style>
 
 </body>
 </html>

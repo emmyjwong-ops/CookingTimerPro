@@ -18,7 +18,13 @@ import androidx.core.app.NotificationCompat
 class AlarmSoundReceiver : BroadcastReceiver() {
     companion object {
         private const val FALLBACK_NOTIFICATION_ID = 9002
-        private const val FALLBACK_CHANNEL_ID = "alarm_sound_service_channel"
+        // ISSUE 15 FIX: use a dedicated HIGH-importance channel for the fallback
+        // notification. Previously the fallback reused the service channel id
+        // (alarm_sound_service_channel, IMPORTANCE_LOW) which made the fallback
+        // show silently in the shade — defeating its purpose when the service
+        // failed to start. A fresh channel id is required because channel
+        // importance is locked after first creation.
+        private const val FALLBACK_CHANNEL_ID = "alarm_fallback_channel_v1"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -28,8 +34,11 @@ class AlarmSoundReceiver : BroadcastReceiver() {
         val soundFile = intent.getStringExtra("soundFile") ?: "bell"
         val vibrate   = intent.getBooleanExtra("vibrate", false)
 
-        // Acquire a short wake lock to keep the CPU awake while the service starts.
-        acquireBriefWakeLock(context)
+        // ISSUE 4 FIX: hold a local WakeLock reference so it can be released
+        // after the service handoff, rather than leaking a wake lock that
+        // stays held until its 10-second safety timeout. The timeout is kept
+        // as a last-resort safety net.
+        val wakeLock = acquireBriefWakeLock(context)
 
         val serviceIntent = Intent(context, AlarmSoundService::class.java).apply {
             action = AlarmSoundService.ACTION_PLAY
@@ -44,6 +53,9 @@ class AlarmSoundReceiver : BroadcastReceiver() {
             } else {
                 context.startService(serviceIntent)
             }
+            // ISSUE 4 FIX: release the wake lock once the service has taken
+            // over — the foreground service will hold the CPU itself.
+            releaseWakeLock(wakeLock)
         } catch (e: Exception) {
             // On Android 12+ (S), starting a foreground service from a
             // BroadcastReceiver can throw ForegroundServiceStartNotAllowedException
@@ -52,18 +64,27 @@ class AlarmSoundReceiver : BroadcastReceiver() {
             // gets notified that their timer is done.
             android.util.Log.w("AlarmSoundReceiver", "startForegroundService failed: ${e.message}")
             postFallbackNotification(context, timerId)
+            // ISSUE 4 FIX: release the wake lock after posting the fallback.
+            releaseWakeLock(wakeLock)
         }
     }
 
-    private fun acquireBriefWakeLock(context: Context) {
-        try {
-            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+    private fun acquireBriefWakeLock(context: Context): PowerManager.WakeLock? {
+        return try {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return null
             val wl = pm.newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK,
                 "CookingTimerPro:AlarmReceiverWakeLock"
             )
             wl.setReferenceCounted(false)
-            wl.acquire(10_000L) // 10 seconds max, released automatically.
+            wl.acquire(10_000L) // 10-second safety net in case we never release.
+            wl
+        } catch (_: Exception) { null }
+    }
+
+    private fun releaseWakeLock(wl: PowerManager.WakeLock?) {
+        try {
+            if (wl != null && wl.isHeld) wl.release()
         } catch (_: Exception) {}
     }
 
@@ -72,14 +93,20 @@ class AlarmSoundReceiver : BroadcastReceiver() {
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Reuse the same channel id as AlarmSoundService so the user's settings apply.
+                // ISSUE 15 FIX: create a dedicated HIGH-importance channel so the
+                // fallback notification actually pops as heads-up, vibrates,
+                // and bypasses DND (it represents a timer-complete alarm).
                 val existing = nm.getNotificationChannel(FALLBACK_CHANNEL_ID)
                 if (existing == null) {
                     val channel = NotificationChannel(
                         FALLBACK_CHANNEL_ID,
-                        "Alarm Sound",
+                        "Timer alarm (fallback)",
                         NotificationManager.IMPORTANCE_HIGH
-                    )
+                    ).apply {
+                        description = "Shown when the alarm sound service cannot be started."
+                        enableVibration(true)
+                        setBypassDnd(true)
+                    }
                     nm.createNotificationChannel(channel)
                 }
             }
