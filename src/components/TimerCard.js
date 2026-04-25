@@ -6,6 +6,7 @@ import {
   Animated,
   StyleSheet,
   Alert,
+  Vibration,
 } from 'react-native';
 import {useTheme} from '../hooks/useTheme';
 import {useTimers} from '../context/TimerContext';
@@ -182,17 +183,35 @@ const TimerCard = React.memo(function TimerCard({timer, navigation}) {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Action buttons are outside the pulsing Animated.View — always at
-          full opacity so the user can clearly see and tap them. */}
+      {/* v4.5.6 — large, obvious Dismiss button sized for kitchen use.
+          The QA report highlighted that users are often cooking with wet,
+          greasy or occupied hands when silencing an alarm, so the dismiss
+          action is a dominant red button at least 72dp tall filling most
+          of the card width. A short haptic pulse on tap confirms the press
+          registered even before the alarm sound stops (native-service
+          teardown has a small latency). +5 min stays available but as a
+          smaller secondary action. */}
       {timer.isComplete && (
         <View style={styles.completeActions}>
           <TouchableOpacity
-            style={[styles.dismissBtn, {borderColor: C.border}]}
-            onPress={() => dismissTimer(timer.id)}>
-            <Text style={[styles.dismissText, {color: C.primaryText}]}>Dismiss</Text>
+            style={styles.dismissBtn}
+            activeOpacity={0.75}
+            accessibilityLabel="Dismiss alarm"
+            accessibilityRole="button"
+            onPress={() => {
+              // Haptic confirms tap registered — critical for wet/greasy
+              // fingers in a cooking context where users can't verify
+              // visually that a light tap landed on the button.
+              try { Vibration.vibrate(40); } catch (_) {}
+              dismissTimer(timer.id);
+            }}>
+            <Text style={styles.dismissText}>Dismiss alarm</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.extendBtn, {backgroundColor: C.tealBg}]}
+            style={[styles.extendBtn, {borderColor: C.tealText}]}
+            activeOpacity={0.75}
+            accessibilityLabel="Extend timer by 5 minutes"
+            accessibilityRole="button"
             onPress={() => extendTimer(timer.id, 300)}>
             <Text style={[styles.extendText, {color: C.tealText}]}>+5 min</Text>
           </TouchableOpacity>
@@ -266,29 +285,45 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   completeActions: {
-    flexDirection: 'row',
-    marginTop: 12,
+    // Stack vertically so the primary Dismiss button gets full card width.
+    marginTop: 14,
     gap: 10,
   },
   dismissBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 0.5,
+    // Big red primary button — sized per QA recommendation (≥72dp tall,
+    // fills card width). Hard-coded red #DC2626 so the destructive colour
+    // stands out identically in light and dark mode.
+    backgroundColor: '#DC2626',
+    minHeight: 72,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    // Elevation lifts it visually above the rest of the card.
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.18,
+    shadowRadius: 3,
   },
   dismissText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
   extendBtn: {
-    flex: 1,
-    paddingVertical: 10,
+    // Secondary action — full width but clearly subordinate via outlined
+    // style and smaller height.
+    paddingVertical: 12,
     borderRadius: 8,
+    borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   extendText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

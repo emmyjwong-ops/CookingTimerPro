@@ -80,36 +80,12 @@ export default function SettingsScreen({navigation}) {
   const [soundPickerVisible, setSoundPickerVisible] = useState(false);
   const soundPreviewTimeout = useRef(null);
 
-  // Hidden dev toggle: tap version text 7 times to unlock/lock premium.
-  // Works in both debug and release builds (intentional developer shortcut).
-  const devTapCount = useRef(0);
-  const devTapTimer = useRef(null);
-  const handleVersionTap = () => {
-    devTapCount.current += 1;
-    if (devTapTimer.current) clearTimeout(devTapTimer.current);
-    devTapTimer.current = setTimeout(() => { devTapCount.current = 0; }, 1500);
-    if (devTapCount.current >= 7) {
-      devTapCount.current = 0;
-      const next = !settings.isPremium;
-      updateSetting('isPremium', next);
-      Alert.alert(
-        next ? '🔓 Premium ON' : '🔒 Premium OFF',
-        'Developer toggle — not visible to real users.',
-      );
-    }
-  };
-
   // Clean up pending timeouts on unmount.
   useEffect(() => {
     return () => {
       if (soundPreviewTimeout.current) {
         clearTimeout(soundPreviewTimeout.current);
         NativeModules.SoundModule?.stopBell();
-      }
-      // FIX: also clear the dev-tap reset timer to avoid a memory leak when
-      // the Settings screen is unmounted while the 1.5s window is open.
-      if (devTapTimer.current) {
-        clearTimeout(devTapTimer.current);
       }
     };
   }, []);
@@ -253,18 +229,11 @@ export default function SettingsScreen({navigation}) {
         />
       </View>
 
-      <TouchableOpacity
-        onPress={handleVersionTap}
-        activeOpacity={1}
-        // ISSUE 25: the version line is an invisible dev shortcut, not a
-        // user-facing control. Mark it inaccessible so screen readers
-        // announce it as plain text, not as a tappable button.
-        accessible={false}
-        importantForAccessibility="no-hide-descendants">
-        <Text style={[styles.version, {color: C.tertiaryText}]}>
-          CookingTimerPro v{APP_VERSION}
-        </Text>
-      </TouchableOpacity>
+      {/* v4.5.6: developer shortcut removed — License Testing in Play Console
+          is the official path for free premium access during testing. */}
+      <Text style={[styles.version, {color: C.tertiaryText}]}>
+        CookingTimerPro v{APP_VERSION}
+      </Text>
 
     </ScrollView>
 
